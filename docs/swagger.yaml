@@ -1,0 +1,251 @@
+basePath: /
+definitions:
+  controllers.OTPResponse:
+    properties:
+      details:
+        properties:
+          otp:
+            example: "8162"
+            type: string
+          userId:
+            example: 3
+            type: integer
+        type: object
+      message:
+        example: New user created
+        type: string
+      status:
+        example: "1"
+        type: string
+    type: object
+  controllers.editProfileResponse:
+    properties:
+      message:
+        example: User info updated successfully.
+        type: string
+      status:
+        example: "1"
+        type: string
+    type: object
+  controllers.fileUploadResponse:
+    properties:
+      details:
+        properties:
+          url:
+            example: https://quizbuck.s3.ap-south-1.amazonaws.com/uploads/1734090491_new.jpg
+            type: string
+        type: object
+      message:
+        example: File uploaded successfully
+        type: string
+      status:
+        example: "1"
+        type: string
+    type: object
+  controllers.profileInfo:
+    properties:
+      email:
+        example: sn@gmail.com
+        type: string
+      gender:
+        example: Male
+        type: string
+      image:
+        example: url-of-the-image
+        type: string
+      name:
+        example: Shivam Nagpal
+        type: string
+      phone:
+        example: "0987656"
+        type: string
+      userId:
+        example: "1"
+        type: string
+    type: object
+  controllers.userInfo:
+    properties:
+      details:
+        properties:
+          ID:
+            example: 3
+            type: integer
+          created:
+            example: "2024-12-10T07:04:37Z"
+            type: string
+          email:
+            example: shivam@gmail.com
+            type: string
+          name:
+            example: Shivam
+            type: string
+          otp:
+            example: "8162"
+            type: string
+          phone:
+            example: "9144"
+            type: string
+          register:
+            example: "1"
+            type: string
+        type: object
+      message:
+        example: User logged in successfully
+        type: string
+      status:
+        example: "1"
+        type: string
+    type: object
+  controllers.verifyOtpResponse:
+    properties:
+      details:
+        properties:
+          ID:
+            example: 3
+            type: integer
+          created:
+            example: "2024-12-10T07:04:37Z"
+            type: string
+          email:
+            example: shivam@gmail.com
+            type: string
+          name:
+            example: Shivam
+            type: string
+          otp:
+            example: "8162"
+            type: string
+          phone:
+            example: "9144"
+            type: string
+          register:
+            example: "1"
+            type: string
+        type: object
+      message:
+        example: User logged in successfully
+        type: string
+      status:
+        example: "1"
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact: {}
+  description: This is list API's to be used in Quiz App.
+  termsOfService: http://swagger.io/terms/
+  title: Quiz App API's
+  version: "1.0"
+paths:
+  /upload/file:
+    post:
+      consumes:
+      - application/json
+      description: upload file to s3
+      parameters:
+      - description: user file to upload
+        in: formData
+        name: file
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/controllers.fileUploadResponse'
+      summary: upload file to s3
+      tags:
+      - User AUth
+  /users/check-user/{phone}:
+    get:
+      consumes:
+      - application/json
+      description: generateing OTP for the user
+      parameters:
+      - description: user phone number
+        in: path
+        name: phone
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/controllers.OTPResponse'
+      summary: generateing OTP for the user
+      tags:
+      - User AUth
+  /users/edit-user-profile:
+    post:
+      consumes:
+      - application/json
+      description: This API edit user profile
+      parameters:
+      - description: this is user info json
+        in: body
+        name: id
+        required: true
+        schema:
+          $ref: '#/definitions/controllers.profileInfo'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/controllers.editProfileResponse'
+      summary: This API edit user profile
+      tags:
+      - User AUth
+  /users/get-user/{id}:
+    get:
+      consumes:
+      - application/json
+      description: This API will provide user info bu id
+      parameters:
+      - description: this is user id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/controllers.userInfo'
+      summary: This API will provide user info bu id
+      tags:
+      - User AUth
+  /users/verify-otp/{userId}/{otp}:
+    get:
+      consumes:
+      - application/json
+      description: This API will verify user OTP with userId
+      parameters:
+      - description: user app Id
+        in: path
+        name: userId
+        required: true
+        type: string
+      - description: user otp
+        in: path
+        name: otp
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/controllers.verifyOtpResponse'
+      summary: This API will verify user OTP with userId
+      tags:
+      - User AUth
+swagger: "2.0"
