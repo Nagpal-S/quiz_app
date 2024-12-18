@@ -124,6 +124,7 @@ func (uc *UserController) VerifyOTP(c *gin.Context) {
 	otp := c.Param("otp")
 
 	var user models.User
+	var wallet models.UserWallet
 
 	// Find user by userId
 	err := uc.DB.Where("id = ?", userId).First(&user).Error
@@ -140,12 +141,29 @@ func (uc *UserController) VerifyOTP(c *gin.Context) {
 		return
 	}
 
+	wallet.UserId = uint64(user.ID)
+	wallet.Created = user.Created
+	if err := uc.DB.Create(&wallet).Error; err != nil {
+
+		c.JSON(500, gin.H{
+
+			"status":  "0",
+			"message": "Db error while creating user wallet",
+		})
+		return
+
+	}
+
 	// Check if the user is registered or not (Register == 0 or 1)
 	if user.Register == "0" {
 		// User is not registered, update the status
 		user.Register = "1" // Update register to "1" (registered)
-		if err := uc.DB.Save(&user).Error; err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"message": "Failed to update registration status", "status": "0"})
+
+		if err := uc.DB.Model(&user).Select("Register").Save(&user).Error; err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"message": "Failed to update registration status",
+				"status":  "0",
+			})
 			return
 		}
 		c.JSON(http.StatusOK, gin.H{

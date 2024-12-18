@@ -14,8 +14,8 @@ type User struct {
 	Phone    string    `json:"phone" gorm:"type:varchar(22)unique"`
 	Otp      string    `json:"otp" gorm:"type:int(11)"`
 	Image    string    `json:"image" gorm:"type:text"`
-	Register string    `json:"register" gorm:"type:varchar(1);default:'0'"`                      // Enum "0" or "1"
-	Gender   string    `json:"gender" gorm:"type:varchar(6);check:gender IN ('Male', 'Female')"` // Enum type for Gender
+	Register string    `json:"register" gorm:"type:varchar(1);default:'0'"` // Enum "0" or "1"
+	Gender   string    `json:"gender" gorm:"type:varchar(6);default:NULL;check:gender IN ('Male', 'Female')"`
 	Created  time.Time `json:"created" gorm:"type:timestamp;default:CURRENT_TIMESTAMP"`
 }
 

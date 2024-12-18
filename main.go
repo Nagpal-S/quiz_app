@@ -35,6 +35,7 @@ func main() {
 	models.MigrateUser(db)
 	models.MigrateQuizCategory(db)
 	models.MigrateQuizQuestion(db)
+	models.MigrateUserWallet(db)
 
 	router := gin.Default()
 
