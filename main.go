@@ -33,6 +33,8 @@ func main() {
 	}
 
 	models.MigrateUser(db)
+	models.MigrateQuizCategory(db)
+	models.MigrateQuizQuestion(db)
 
 	router := gin.Default()
 
@@ -53,6 +55,7 @@ func main() {
 	})
 
 	routes.RegisterUser(router, db)
+	routes.QuizRoutes(router, db)
 	routes.RegisterRoutes(router)
 
 	router.Run(":8080")

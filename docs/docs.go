@@ -16,6 +16,61 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/quizes/get-categories": {
+            "get": {
+                "description": "This API will provide list of quiz categories",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Quizes"
+                ],
+                "summary": "This API will provide list of quiz categories",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/controllers.categoryInfo"
+                        }
+                    }
+                }
+            }
+        },
+        "/quizes/get-question-by-category/{category_id}": {
+            "get": {
+                "description": "This API will provide list of quiz questions",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Quizes"
+                ],
+                "summary": "This API will provide list of quiz questions",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "quiz category id",
+                        "name": "category_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/controllers.quizInfo"
+                        }
+                    }
+                }
+            }
+        },
         "/upload/file": {
             "post": {
                 "description": "upload file to s3",
@@ -213,6 +268,64 @@ const docTemplate = `{
                 }
             }
         },
+        "controllers.categoryInfo": {
+            "type": "object",
+            "properties": {
+                "details": {
+                    "type": "object",
+                    "properties": {
+                        "active": {
+                            "type": "string",
+                            "example": "1"
+                        },
+                        "created": {
+                            "type": "string",
+                            "example": "2024-12-17T18:07:19+05:30"
+                        },
+                        "icon": {
+                            "type": "string",
+                            "example": "https://quizbuck.s3.ap-south-1.amazonaws.com/uploads/1734090491_new.jpg"
+                        },
+                        "id": {
+                            "type": "integer",
+                            "example": 1
+                        },
+                        "join_amount": {
+                            "type": "integer",
+                            "example": 100
+                        },
+                        "num_of_users_can_join": {
+                            "type": "integer",
+                            "example": 20
+                        },
+                        "num_of_users_have_joined": {
+                            "type": "integer",
+                            "example": 0
+                        },
+                        "quiz_time": {
+                            "type": "string",
+                            "example": "2024-12-17T18:00:00+05:30"
+                        },
+                        "title": {
+                            "type": "string",
+                            "example": "GK"
+                        },
+                        "total_price": {
+                            "type": "integer",
+                            "example": 100000
+                        }
+                    }
+                },
+                "message": {
+                    "type": "string",
+                    "example": "Category list data found."
+                },
+                "status": {
+                    "type": "string",
+                    "example": "1"
+                }
+            }
+        },
         "controllers.editProfileResponse": {
             "type": "object",
             "properties": {
@@ -272,6 +385,71 @@ const docTemplate = `{
                     "example": "0987656"
                 },
                 "userId": {
+                    "type": "string",
+                    "example": "1"
+                }
+            }
+        },
+        "controllers.quizInfo": {
+            "type": "object",
+            "properties": {
+                "details": {
+                    "type": "object",
+                    "properties": {
+                        "category_id": {
+                            "type": "integer",
+                            "example": 1
+                        },
+                        "correct_answer": {
+                            "type": "string",
+                            "example": "c"
+                        },
+                        "createdAt": {
+                            "type": "string"
+                        },
+                        "id": {
+                            "type": "integer",
+                            "example": 1
+                        },
+                        "level": {
+                            "type": "string",
+                            "example": "easy"
+                        },
+                        "option_a": {
+                            "type": "string",
+                            "example": "Unites States of America"
+                        },
+                        "option_b": {
+                            "type": "string",
+                            "example": "England"
+                        },
+                        "option_c": {
+                            "type": "string",
+                            "example": "India"
+                        },
+                        "option_d": {
+                            "type": "string",
+                            "example": "Sri Lanka"
+                        },
+                        "otp": {
+                            "type": "string",
+                            "example": "8162"
+                        },
+                        "question": {
+                            "type": "string",
+                            "example": "Where is Delhi?"
+                        },
+                        "userId": {
+                            "type": "integer",
+                            "example": 3
+                        }
+                    }
+                },
+                "message": {
+                    "type": "string",
+                    "example": "New user created"
+                },
+                "status": {
                     "type": "string",
                     "example": "1"
                 }
