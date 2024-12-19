@@ -15,13 +15,29 @@ type User struct {
 	Otp      string    `json:"otp" gorm:"type:int(11)"`
 	Image    string    `json:"image" gorm:"type:text"`
 	Register string    `json:"register" gorm:"type:varchar(1);default:'0'"` // Enum "0" or "1"
-	Gender   string    `json:"gender" gorm:"type:varchar(6);default:NULL;check:gender IN ('Male', 'Female')"`
+	Gender   string    `json:"gender" gorm:"type:varchar(6);default:NULL;check:gender IN ('Male', 'Female', 'Others')"`
 	Created  time.Time `json:"created" gorm:"type:timestamp;default:CURRENT_TIMESTAMP"`
 }
 
 // MigrateUser migrates the User table
 func MigrateUser(db *gorm.DB) {
 	db.AutoMigrate(&User{})
+	// if err := db.AutoMigrate(&User{}); err != nil {
+	// 	log.Println("Migration failed:", err)
+	// }
+}
+
+type UserTransactions struct {
+	ID              uint64    `gorm:"primaryKey;autoIncrement"`
+	UserId          uint      `gorm:"not null;index" json:"user_id"` // Foreign key
+	Title           string    `json:"title" gorm:"type:varchar(44)"`
+	TransactionType string    `gorm:"type:enum('CREDIT','DEBIT');not null; check:transaction_type IN ('DEBIT', 'CREDIT')" json:"transaction_type"`
+	Amount          float64   `json:"amount" gorm:"type:float"`
+	Created         time.Time `json:"created" gorm:"type:timestamp;default:CURRENT_TIMESTAMP"`
+}
+
+func MigrateUserTransactions(db *gorm.DB) {
+	db.AutoMigrate(&UserTransactions{})
 	// if err := db.AutoMigrate(&User{}); err != nil {
 	// 	log.Println("Migration failed:", err)
 	// }

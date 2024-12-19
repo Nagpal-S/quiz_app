@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"errors"
 	"fmt"
 	"math/rand"
 	"net/http"
@@ -217,7 +218,7 @@ func (uc *UserController) CheckUser(c *gin.Context) {
 	var user models.User
 
 	// Find the user by userId
-	if err := uc.DB.Where("id = ?", userId).First(&user).Error; err != nil {
+	if err := uc.DB.Where("id = ? AND register = 1", userId).First(&user).Error; err != nil {
 		// If no user found, return "user not found" message
 		c.JSON(http.StatusNotFound, gin.H{"message": "User not found", "status": "0"})
 		return
@@ -289,7 +290,7 @@ func (uc *UserController) EditUserProfile(c *gin.Context) {
 
 	}
 
-	if err := uc.DB.Where("id = ?", requestBody.ID).First(&user).Error; err != nil {
+	if err := uc.DB.Where("id = ? AND register = 1", requestBody.ID).First(&user).Error; err != nil {
 
 		c.JSON(404, gin.H{
 			"status":  "0",
@@ -327,4 +328,231 @@ func (uc *UserController) EditUserProfile(c *gin.Context) {
 type editProfileResponse struct {
 	Status  string `json:"status" example:"1"`
 	Message string `json:"message" example:"User info updated successfully."`
+}
+
+type requestTransaction struct {
+	UserId          uint    `json:"user_id" example:"1"`
+	Amount          float64 `json:"amount" example:"200"`
+	TransactionType string  `json:"transaction_type" example:"DEBIT"`
+}
+
+// InitiateUserTransaction This API will make user transactions
+//
+//	@Summary		This API will make user transactions
+//	@Description	This API will make user transactions
+//	@Schemes
+//	@Tags		User Wallet
+//	@Accept		json
+//	@Produce	json
+//	@Param		id	body		requestTransaction	true	"this is transaction info json"
+//	@Success	200	{object}	transactionResponse
+//	@Router		/users/initiate-user-transaction [post]
+func (uc *UserController) InitiateUserTransaction(c *gin.Context) {
+
+	// var requestBody struct {
+	// 	UserId          string  `json:"user_id" example:"1"`
+	// 	Amount          float64 `json:"amount" example:"200"`
+	// 	TransactionType string  `json:"transaction_type" example:"DEBIT"`
+	// }
+
+	var requestBody requestTransaction
+
+	var wallet models.UserWallet
+	var transaction models.UserTransactions
+	var user models.User
+
+	if err := c.ShouldBindJSON(&requestBody); err != nil {
+
+		c.JSON(400, gin.H{
+
+			"status":  "0",
+			"message": "Bad request." + err.Error(),
+		})
+		return
+
+	}
+	// check valid user
+	if err := uc.DB.Where("id = ? AND register = 1", requestBody.UserId).Take(&user).Error; err != nil {
+		c.JSON(500, gin.H{
+
+			"status":  "0",
+			"message": "Invalid user_id, user not found. " + err.Error(),
+			// "message": "DB error while fetching user info. " + err.Error(),
+		})
+		return
+	}
+
+	// get user wallet
+	if err := uc.DB.Where("user_id = ?", requestBody.UserId).First(&wallet).Error; err != nil {
+
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+
+			c.JSON(404, gin.H{
+
+				"status":  "0",
+				"message": "User wallet not found.",
+			})
+
+		} else {
+
+			c.JSON(500, gin.H{
+
+				"status":  "0",
+				"message": "DB error while fetging user wallet. " + err.Error(),
+			})
+
+		}
+
+		return
+	}
+
+	// manage transaction for DEBIT and CREDIT
+
+	// if transaction is debit
+	if requestBody.TransactionType == "DEBIT" {
+
+		if wallet.Amount < requestBody.Amount {
+			c.JSON(500, gin.H{
+
+				"status":  "0",
+				"message": "Amount can not be debited. INSUFFICIENT BALANCE.",
+			})
+			return
+		}
+
+		wallet.Amount -= requestBody.Amount
+		transaction.Title = "Withdrawal"
+	} else {
+		// if transaction is credit
+		wallet.Amount += requestBody.Amount
+		transaction.Title = "Deposit"
+	}
+
+	transaction.Amount = requestBody.Amount
+	transaction.UserId = requestBody.UserId
+	transaction.TransactionType = requestBody.TransactionType
+
+	// create transaction
+	if err := uc.DB.Create(&transaction).Error; err != nil {
+		c.JSON(500, gin.H{
+
+			"status":  "0",
+			"message": "DB error while creating transaction",
+		})
+		return
+	}
+
+	// update wallet
+	if err := uc.DB.Model(&wallet).Update("amount", wallet.Amount).Error; err != nil {
+		c.JSON(500, gin.H{
+			"status":  "0",
+			"message": "DB error while updating wallet",
+		})
+		return
+	}
+
+	c.JSON(200, gin.H{
+		"status":  "1",
+		"message": "Transaction successfull and user wallet updated.",
+	})
+
+}
+
+type transactionResponse struct {
+	Status  string `json:"status" example:"1"`
+	Message string `json:"message" example:"User info updated successfully."`
+}
+
+type TResponse struct {
+	Title           string    `json:"title"`
+	TransactionType string    `json:"transaction_type"`
+	Amount          float64   `json:"amount"`
+	Created         time.Time `json:"created"`
+}
+
+// GetUserWalletDetails This API will get user details
+// @Summary      Get user wallet details
+// @Description  Fetches user wallet and transaction details
+// @Tags         User Wallet
+// @Accept       json
+// @Produce      json
+// @Param        user_id  path     int  true  "User ID"
+// @Success      200      {object} APIResponse
+// @Router       /users/get-user-wallet-details/{user_id} [get]
+func (uc *UserController) GetUserWalletDetails(c *gin.Context) {
+
+	userId := c.Param("user_id")
+
+	var wallet models.UserWallet
+	var transaction []TResponse
+	// get user wallet
+	if err := uc.DB.Where("user_id = ?", userId).First(&wallet).Error; err != nil {
+
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+
+			c.JSON(404, gin.H{
+
+				"status":  "0",
+				"message": "User wallet not found. " + err.Error(),
+			})
+
+		} else {
+
+			c.JSON(500, gin.H{
+
+				"status":  "0",
+				"message": "DB error while getting user wallet. " + err.Error(),
+			})
+
+		}
+
+		return
+
+	}
+
+	// get user transaction
+	if err := uc.DB.Raw("SELECT title, transaction_type, amount, created FROM user_transactions WHERE user_id = ?", userId).Scan(&transaction).Error; err != nil {
+
+		c.JSON(500, gin.H{
+
+			"status":  "0",
+			"message": "DB error while getting user transactions. " + err.Error(),
+		})
+		return
+
+	}
+
+	response := gin.H{
+
+		"wallet":       wallet.Amount,
+		"transactions": transaction,
+	}
+
+	c.JSON(200, gin.H{
+
+		"status":  "1",
+		"message": "User wallet details found.",
+		"details": response,
+	})
+
+}
+
+type Transaction struct {
+	Title           string    `json:"title" example:"Deposit"`
+	TransactionType string    `json:"transaction_type" example:"CREDIT"`
+	Amount          float64   `json:"amount" example:"20"`
+	Created         time.Time `json:"created" example:"2024-12-18T23:04:50+05:30"`
+}
+
+// WalletDetails defines the structure for wallet details
+type WalletDetails struct {
+	Transactions []Transaction `json:"transactions"`
+	Wallet       float64       `json:"wallet"`
+}
+
+// APIResponse defines the overall structure for the response
+type APIResponse struct {
+	Status  string        `json:"status" example:"1"`
+	Message string        `json:"message" example:"User wallet details found."`
+	Details WalletDetails `json:"details"`
 }

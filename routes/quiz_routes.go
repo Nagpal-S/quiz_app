@@ -14,8 +14,10 @@ func QuizRoutes(router *gin.Engine, db *gorm.DB) {
 	quizGroup := router.Group("/quizes")
 	{
 
-		quizGroup.GET("get-categories", QuizController.GetQuizCategories)
+		quizGroup.GET("get-categories/:user_id", QuizController.GetQuizCategories)
 		quizGroup.GET("get-question-by-category/:category_id", QuizController.GetQuizByCategory)
+		quizGroup.POST("user-join-contest", QuizController.UserJoinContest)
+		quizGroup.GET("get-contest-joined-by-user/:user_id", QuizController.GetContestJoinedByUser)
 
 	}
 

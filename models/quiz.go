@@ -16,7 +16,7 @@ type QuizCategory struct {
 	NumOfUsersHaveJoined int       `json:"num_of_users_have_joined" gorm:"type:int(11)"`
 	QuizTime             time.Time `json:"quiz_time" gorm:"type:datetime"`
 	JoinAmount           int       `json:"join_amount" gorm:"type:int(11)"`
-	Created              time.Time `json:"crated" gorm:"type:datetime"`
+	Created              time.Time `json:"crated" gorm:"type:timestamp;default:CURRENT_TIMESTAMP"`
 }
 
 type QuizQuestion struct {
@@ -29,7 +29,22 @@ type QuizQuestion struct {
 	OptionC       string    `gorm:"type:varchar(44);not null" json:"option_c"`
 	OptionD       string    `gorm:"type:varchar(44);not null" json:"option_d"`
 	CorrectAnswer string    `gorm:"type:enum('a','b','c','d');not null" json:"correct_answer"`
-	CreatedAt     time.Time `gorm:"autoCreateTime" json:"created_at"`
+	CreatedAt     time.Time `gorm:"type:timestamp;default:CURRENT_TIMESTAMP" json:"created_at"`
+}
+
+type UserJoinContest struct {
+	ID         uint64    `gorm:"primaryKey;autoIncrement" json:"id"`
+	CategoryID uint64    `gorm:"not null;index" json:"category_id"` // Foreign key
+	UserID     uint      `gorm:"not null;index" json:"user_id"`     // Foreign key
+	JoinedAt   time.Time `gorm:"type:timestamp;default:CURRENT_TIMESTAMP" json:"joined_at"`
+}
+
+type UserJoinContestHistory struct {
+	ID         uint64    `gorm:"primaryKey;autoIncrement" json:"id"`
+	JoinID     uint64    `gorm:"not null;" json:"join_id"`          // Foreign key
+	CategoryID uint64    `gorm:"not null;index" json:"category_id"` // Foreign key
+	UserID     uint      `gorm:"not null;index" json:"user_id"`     // Foreign key
+	JoinedAt   time.Time `gorm:"type:timestamp;default:CURRENT_TIMESTAMP" json:"joined_at"`
 }
 
 // MigrateUser migrates the User table
@@ -39,4 +54,12 @@ func MigrateQuizCategory(db *gorm.DB) {
 
 func MigrateQuizQuestion(db *gorm.DB) {
 	db.AutoMigrate(&QuizQuestion{})
+}
+
+func MigrateUserJoinContest(db *gorm.DB) {
+	db.AutoMigrate(&UserJoinContest{})
+}
+
+func MigrateUserJoinContestHistory(db *gorm.DB) {
+	db.AutoMigrate(&UserJoinContestHistory{})
 }

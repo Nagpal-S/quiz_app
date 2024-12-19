@@ -16,7 +16,7 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/quizes/get-categories": {
+        "/quizes/get-categories/{user_id}": {
             "get": {
                 "description": "This API will provide list of quiz categories",
                 "consumes": [
@@ -29,11 +29,52 @@ const docTemplate = `{
                     "Quizes"
                 ],
                 "summary": "This API will provide list of quiz categories",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "User ID",
+                        "name": "user_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/controllers.categoryInfo"
+                        }
+                    }
+                }
+            }
+        },
+        "/quizes/get-contest-joined-by-user/{user_id}": {
+            "get": {
+                "description": "This API will list contest joined by user",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Quizes"
+                ],
+                "summary": "This API will list contest joined by user",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "user id",
+                        "name": "user_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/controllers.JoinedContestResponse"
                         }
                     }
                 }
@@ -66,6 +107,45 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/controllers.quizInfo"
+                        }
+                    }
+                }
+            }
+        },
+        "/quizes/user-join-contest": {
+            "post": {
+                "description": "This API will make user to join a contest",
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Quizes"
+                ],
+                "summary": "This API will make user to join a contest",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "user id",
+                        "name": "user_id",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "quiz category id",
+                        "name": "category_id",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/controllers.JoinContestResponse"
                         }
                     }
                 }
@@ -169,6 +249,38 @@ const docTemplate = `{
                 }
             }
         },
+        "/users/get-user-wallet-details/{user_id}": {
+            "get": {
+                "description": "Fetches user wallet and transaction details",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User Wallet"
+                ],
+                "summary": "Get user wallet details",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "User ID",
+                        "name": "user_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/controllers.APIResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/users/get-user/{id}": {
             "get": {
                 "description": "This API will provide user info bu id",
@@ -196,6 +308,40 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/controllers.userInfo"
+                        }
+                    }
+                }
+            }
+        },
+        "/users/initiate-user-transaction": {
+            "post": {
+                "description": "This API will make user transactions",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User Wallet"
+                ],
+                "summary": "This API will make user transactions",
+                "parameters": [
+                    {
+                        "description": "this is transaction info json",
+                        "name": "id",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/controllers.requestTransaction"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/controllers.transactionResponse"
                         }
                     }
                 }
@@ -242,6 +388,75 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "controllers.APIResponse": {
+            "type": "object",
+            "properties": {
+                "details": {
+                    "$ref": "#/definitions/controllers.WalletDetails"
+                },
+                "message": {
+                    "type": "string",
+                    "example": "User wallet details found."
+                },
+                "status": {
+                    "type": "string",
+                    "example": "1"
+                }
+            }
+        },
+        "controllers.ContestInfo": {
+            "type": "object",
+            "properties": {
+                "contest_amount": {
+                    "type": "integer",
+                    "example": 10000
+                },
+                "contest_date": {
+                    "type": "string",
+                    "example": "2024-12-21T18:00:00+05:30"
+                },
+                "contest_id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "contest_name": {
+                    "type": "string",
+                    "example": "GK"
+                }
+            }
+        },
+        "controllers.JoinContestResponse": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string",
+                    "example": "Contest joined successfully."
+                },
+                "status": {
+                    "type": "string",
+                    "example": "1"
+                }
+            }
+        },
+        "controllers.JoinedContestResponse": {
+            "type": "object",
+            "properties": {
+                "details": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/controllers.ContestInfo"
+                    }
+                },
+                "message": {
+                    "type": "string",
+                    "example": "Contest list found."
+                },
+                "status": {
+                    "type": "string",
+                    "example": "1"
+                }
+            }
+        },
         "controllers.OTPResponse": {
             "type": "object",
             "properties": {
@@ -268,51 +483,93 @@ const docTemplate = `{
                 }
             }
         },
+        "controllers.Transaction": {
+            "type": "object",
+            "properties": {
+                "amount": {
+                    "type": "number",
+                    "example": 20
+                },
+                "created": {
+                    "type": "string",
+                    "example": "2024-12-18T23:04:50+05:30"
+                },
+                "title": {
+                    "type": "string",
+                    "example": "Deposit"
+                },
+                "transaction_type": {
+                    "type": "string",
+                    "example": "CREDIT"
+                }
+            }
+        },
+        "controllers.WalletDetails": {
+            "type": "object",
+            "properties": {
+                "transactions": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/controllers.Transaction"
+                    }
+                },
+                "wallet": {
+                    "type": "number"
+                }
+            }
+        },
         "controllers.categoryInfo": {
             "type": "object",
             "properties": {
                 "details": {
-                    "type": "object",
-                    "properties": {
-                        "active": {
-                            "type": "string",
-                            "example": "1"
-                        },
-                        "created": {
-                            "type": "string",
-                            "example": "2024-12-17T18:07:19+05:30"
-                        },
-                        "icon": {
-                            "type": "string",
-                            "example": "https://quizbuck.s3.ap-south-1.amazonaws.com/uploads/1734090491_new.jpg"
-                        },
-                        "id": {
-                            "type": "integer",
-                            "example": 1
-                        },
-                        "join_amount": {
-                            "type": "integer",
-                            "example": 100
-                        },
-                        "num_of_users_can_join": {
-                            "type": "integer",
-                            "example": 20
-                        },
-                        "num_of_users_have_joined": {
-                            "type": "integer",
-                            "example": 0
-                        },
-                        "quiz_time": {
-                            "type": "string",
-                            "example": "2024-12-17T18:00:00+05:30"
-                        },
-                        "title": {
-                            "type": "string",
-                            "example": "GK"
-                        },
-                        "total_price": {
-                            "type": "integer",
-                            "example": 100000
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "active": {
+                                "type": "string",
+                                "example": "1"
+                            },
+                            "created": {
+                                "type": "string",
+                                "example": "2024-12-17T18:07:19+05:30"
+                            },
+                            "icon": {
+                                "type": "string",
+                                "example": "https://quizbuck.s3.ap-south-1.amazonaws.com/uploads/1734090491_new.jpg"
+                            },
+                            "id": {
+                                "type": "integer",
+                                "example": 1
+                            },
+                            "join_amount": {
+                                "type": "integer",
+                                "example": 100
+                            },
+                            "num_of_users_can_join": {
+                                "type": "integer",
+                                "example": 20
+                            },
+                            "num_of_users_have_joined": {
+                                "type": "integer",
+                                "example": 0
+                            },
+                            "quiz_time": {
+                                "type": "string",
+                                "example": "2024-12-17T18:00:00+05:30"
+                            },
+                            "title": {
+                                "type": "string",
+                                "example": "GK"
+                            },
+                            "total_price": {
+                                "type": "integer",
+                                "example": 100000
+                            },
+                            "user_has_joined": {
+                                "type": "boolean",
+                                "example": true
+                            }
                         }
                     }
                 },
@@ -431,23 +688,45 @@ const docTemplate = `{
                             "type": "string",
                             "example": "Sri Lanka"
                         },
-                        "otp": {
-                            "type": "string",
-                            "example": "8162"
-                        },
                         "question": {
                             "type": "string",
                             "example": "Where is Delhi?"
-                        },
-                        "userId": {
-                            "type": "integer",
-                            "example": 3
                         }
                     }
                 },
                 "message": {
                     "type": "string",
                     "example": "New user created"
+                },
+                "status": {
+                    "type": "string",
+                    "example": "1"
+                }
+            }
+        },
+        "controllers.requestTransaction": {
+            "type": "object",
+            "properties": {
+                "amount": {
+                    "type": "number",
+                    "example": 200
+                },
+                "transaction_type": {
+                    "type": "string",
+                    "example": "DEBIT"
+                },
+                "user_id": {
+                    "type": "integer",
+                    "example": 1
+                }
+            }
+        },
+        "controllers.transactionResponse": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string",
+                    "example": "User info updated successfully."
                 },
                 "status": {
                     "type": "string",

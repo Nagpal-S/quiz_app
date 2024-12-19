@@ -17,5 +17,7 @@ func RegisterUser(router *gin.Engine, db *gorm.DB) {
 		userGroup.GET("/verify-otp/:userId/:otp", userController.VerifyOTP)
 		userGroup.GET("/get-user/:id", userController.CheckUser)
 		userGroup.POST("/edit-user-profile/", userController.EditUserProfile)
+		userGroup.POST("/initiate-user-transaction/", userController.InitiateUserTransaction)
+		userGroup.GET("/get-user-wallet-details/:user_id", userController.GetUserWalletDetails)
 	}
 }
