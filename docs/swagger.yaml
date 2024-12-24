@@ -66,6 +66,70 @@ definitions:
         example: "1"
         type: string
     type: object
+  controllers.Question:
+    properties:
+      category_id:
+        example: 1
+        type: integer
+      correct_answer:
+        example: c
+        type: string
+      created_at:
+        example: "2024-12-18T14:16:53+05:30"
+        type: string
+      id:
+        example: 1
+        type: integer
+      level:
+        example: easy
+        type: string
+      option_a:
+        example: Unites States of America
+        type: string
+      option_b:
+        example: England
+        type: string
+      option_c:
+        example: India
+        type: string
+      option_d:
+        example: Sri Lanka
+        type: string
+      question:
+        example: Where is Delhi?
+        type: string
+    type: object
+  controllers.QuizResponse:
+    properties:
+      details:
+        properties:
+          category_id:
+            example: 1
+            type: integer
+          category_name:
+            example: GK
+            type: string
+          questions:
+            items:
+              $ref: '#/definitions/controllers.Question'
+            type: array
+          questions_duration:
+            example: 60
+            type: integer
+          quiz_end_time:
+            example: "2024-12-24T18:57:33+05:30"
+            type: string
+          quiz_start_time:
+            example: "2024-12-24T14:00:00+05:30"
+            type: string
+        type: object
+      message:
+        example: Quiz question list found.
+        type: string
+      status:
+        example: "1"
+        type: string
+    type: object
   controllers.Transaction:
     properties:
       amount:
@@ -156,47 +220,6 @@ definitions:
         type: object
       message:
         example: File uploaded successfully
-        type: string
-      status:
-        example: "1"
-        type: string
-    type: object
-  controllers.quizInfo:
-    properties:
-      details:
-        properties:
-          category_id:
-            example: 1
-            type: integer
-          correct_answer:
-            example: c
-            type: string
-          createdAt:
-            type: string
-          id:
-            example: 1
-            type: integer
-          level:
-            example: easy
-            type: string
-          option_a:
-            example: Unites States of America
-            type: string
-          option_b:
-            example: England
-            type: string
-          option_c:
-            example: India
-            type: string
-          option_d:
-            example: Sri Lanka
-            type: string
-          question:
-            example: Where is Delhi?
-            type: string
-        type: object
-      message:
-        example: New user created
         type: string
       status:
         example: "1"
@@ -344,7 +367,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/controllers.quizInfo'
+            $ref: '#/definitions/controllers.QuizResponse'
       summary: This API will provide list of quiz questions
       tags:
       - Quizes

@@ -107,13 +107,38 @@ type categoryInfo struct {
 //	@Accept		json
 //	@Produce	json
 //	@Param		category_id	path		string	true	"quiz category id"
-//	@Success	200	{object}	quizInfo
+//	@Success	200	{object}	QuizResponse
 //	@Router		/quizes/get-question-by-category/{category_id} [get]
 func (qc *QuizController) GetQuizByCategory(c *gin.Context) {
 
 	categoryId := c.Param("category_id")
 
 	var quiz []models.QuizQuestion
+	var category models.QuizCategory
+
+	if err := qc.DB.Where("id = ? AND active = 1 AND quiz_time <= ?", categoryId, time.Now()).First(&category).Error; err != nil {
+
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+
+			c.JSON(404, gin.H{
+
+				"status":  "0",
+				"message": "Category not found or category not exist.",
+			})
+
+		} else {
+
+			c.JSON(500, gin.H{
+
+				"status":  "0",
+				"message": "DB error while fetching category info.",
+			})
+
+		}
+
+		return
+
+	}
 
 	if err := qc.DB.Where("category_id = ?", categoryId).Find(&quiz).Error; err != nil {
 
@@ -137,30 +162,48 @@ func (qc *QuizController) GetQuizByCategory(c *gin.Context) {
 
 	}
 
+	var response = gin.H{
+		"category_name":      category.Title,
+		"category_id":        category.ID,
+		"quiz_start_time":    category.QuizTime,
+		"quiz_end_time":      category.QuizEndTime,
+		"questions_duration": category.EachQuestionTimeDuration,
+		"questions":          quiz,
+	}
+
 	c.JSON(200, gin.H{
 
 		"status":  "1",
 		"message": "Quiz question list found.",
-		"details": quiz,
+		"details": response,
 	})
 
 }
 
-type quizInfo struct {
+type QuizResponse struct {
 	Details struct {
-		ID            int       `json:"id" example:"1"`
-		CategoryID    int       `json:"category_id" example:"1"`
-		Level         string    `json:"level" example:"easy"`
-		Question      string    `json:"question" example:"Where is Delhi?"`
-		OptionA       string    `json:"option_a" example:"Unites States of America"`
-		OptionB       string    `json:"option_b" example:"England"`
-		OptionC       string    `json:"option_c" example:"India"`
-		OptionD       string    `json:"option_d" example:"Sri Lanka"`
-		CorrectAnswer string    `json:"correct_answer" example:"c"`
-		CreatedAt     time.Time `created_at" example:"2024-12-18T14:16:53+05:30"`
+		CategoryID        int        `json:"category_id" example:"1"`
+		CategoryName      string     `json:"category_name" example:"GK"`
+		Questions         []Question `json:"questions"`
+		QuestionsDuration int        `json:"questions_duration" example:"60"`
+		QuizStartTime     string     `json:"quiz_start_time" example:"2024-12-24T14:00:00+05:30"`
+		QuizEndTime       string     `json:"quiz_end_time" example:"2024-12-24T18:57:33+05:30"`
 	} `json:"details"`
-	Message string `json:"message" example:"New user created"`
+	Message string `json:"message" example:"Quiz question list found."`
 	Status  string `json:"status" example:"1"`
+}
+
+type Question struct {
+	ID            int    `json:"id" example:"1"`
+	CategoryID    int    `json:"category_id" example:"1"`
+	Level         string `json:"level" example:"easy"`
+	Question      string `json:"question" example:"Where is Delhi?"`
+	OptionA       string `json:"option_a" example:"Unites States of America"`
+	OptionB       string `json:"option_b" example:"England"`
+	OptionC       string `json:"option_c" example:"India"`
+	OptionD       string `json:"option_d" example:"Sri Lanka"`
+	CorrectAnswer string `json:"correct_answer" example:"c"`
+	CreatedAt     string `json:"created_at" example:"2024-12-18T14:16:53+05:30"`
 }
 
 // UserJoinContest This API will make user to join a contest

@@ -100,7 +100,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/controllers.quizInfo"
+                            "$ref": "#/definitions/controllers.QuizResponse"
                         }
                     }
                 }
@@ -521,6 +521,95 @@
                 }
             }
         },
+        "controllers.Question": {
+            "type": "object",
+            "properties": {
+                "category_id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "correct_answer": {
+                    "type": "string",
+                    "example": "c"
+                },
+                "created_at": {
+                    "type": "string",
+                    "example": "2024-12-18T14:16:53+05:30"
+                },
+                "id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "level": {
+                    "type": "string",
+                    "example": "easy"
+                },
+                "option_a": {
+                    "type": "string",
+                    "example": "Unites States of America"
+                },
+                "option_b": {
+                    "type": "string",
+                    "example": "England"
+                },
+                "option_c": {
+                    "type": "string",
+                    "example": "India"
+                },
+                "option_d": {
+                    "type": "string",
+                    "example": "Sri Lanka"
+                },
+                "question": {
+                    "type": "string",
+                    "example": "Where is Delhi?"
+                }
+            }
+        },
+        "controllers.QuizResponse": {
+            "type": "object",
+            "properties": {
+                "details": {
+                    "type": "object",
+                    "properties": {
+                        "category_id": {
+                            "type": "integer",
+                            "example": 1
+                        },
+                        "category_name": {
+                            "type": "string",
+                            "example": "GK"
+                        },
+                        "questions": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/controllers.Question"
+                            }
+                        },
+                        "questions_duration": {
+                            "type": "integer",
+                            "example": 60
+                        },
+                        "quiz_end_time": {
+                            "type": "string",
+                            "example": "2024-12-24T18:57:33+05:30"
+                        },
+                        "quiz_start_time": {
+                            "type": "string",
+                            "example": "2024-12-24T14:00:00+05:30"
+                        }
+                    }
+                },
+                "message": {
+                    "type": "string",
+                    "example": "Quiz question list found."
+                },
+                "status": {
+                    "type": "string",
+                    "example": "1"
+                }
+            }
+        },
         "controllers.Transaction": {
             "type": "object",
             "properties": {
@@ -649,63 +738,6 @@
                 "message": {
                     "type": "string",
                     "example": "File uploaded successfully"
-                },
-                "status": {
-                    "type": "string",
-                    "example": "1"
-                }
-            }
-        },
-        "controllers.quizInfo": {
-            "type": "object",
-            "properties": {
-                "details": {
-                    "type": "object",
-                    "properties": {
-                        "category_id": {
-                            "type": "integer",
-                            "example": 1
-                        },
-                        "correct_answer": {
-                            "type": "string",
-                            "example": "c"
-                        },
-                        "createdAt": {
-                            "type": "string"
-                        },
-                        "id": {
-                            "type": "integer",
-                            "example": 1
-                        },
-                        "level": {
-                            "type": "string",
-                            "example": "easy"
-                        },
-                        "option_a": {
-                            "type": "string",
-                            "example": "Unites States of America"
-                        },
-                        "option_b": {
-                            "type": "string",
-                            "example": "England"
-                        },
-                        "option_c": {
-                            "type": "string",
-                            "example": "India"
-                        },
-                        "option_d": {
-                            "type": "string",
-                            "example": "Sri Lanka"
-                        },
-                        "question": {
-                            "type": "string",
-                            "example": "Where is Delhi?"
-                        }
-                    }
-                },
-                "message": {
-                    "type": "string",
-                    "example": "New user created"
                 },
                 "status": {
                     "type": "string",

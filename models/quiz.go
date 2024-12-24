@@ -7,16 +7,19 @@ import (
 )
 
 type QuizCategory struct {
-	ID                   uint64    `gorm:"primaryKey;autoIncrement"`
-	Active               string    `json:"active" gorm:"type:varchar(1);default:'0'"`
-	Title                string    `json:"title" gorm:"type:varchar(44)"`
-	TotalPrice           int       `json:"total_price" gorm:"type:int(11)"`
-	Icon                 string    `json:"icon" gorm:"type:text"`
-	NumOfUsersCanJoin    int       `json:"num_of_users_can_join" gorm:"type:int(11)"`
-	NumOfUsersHaveJoined int       `json:"num_of_users_have_joined" gorm:"type:int(11)"`
-	QuizTime             time.Time `json:"quiz_time" gorm:"type:datetime"`
-	JoinAmount           int       `json:"join_amount" gorm:"type:int(11)"`
-	Created              time.Time `json:"crated" gorm:"type:timestamp;default:CURRENT_TIMESTAMP"`
+	ID                       uint64    `gorm:"primaryKey;autoIncrement"`
+	Active                   string    `json:"active" gorm:"type:varchar(1);default:'0'"`
+	Title                    string    `json:"title" gorm:"type:varchar(44)"`
+	TotalPrice               int       `json:"total_price" gorm:"type:int(11)"`
+	Icon                     string    `json:"icon" gorm:"type:text"`
+	NumOfUsersCanJoin        int       `json:"num_of_users_can_join" gorm:"type:int(11)"`
+	NumOfUsersHaveJoined     int       `json:"num_of_users_have_joined" gorm:"type:int(11)"`
+	QuizTime                 time.Time `json:"quiz_time" gorm:"type:datetime"`
+	NumOfQuestions           int       `json:"num_of_questions" gorm:"type:int(11)"`
+	EachQuestionTimeDuration int       `json:"each_question_time_duration" gorm:"type:int(11)"`
+	QuizEndTime              time.Time `json:"quiz_end_time" gorm:"type:datetime"`
+	JoinAmount               int       `json:"join_amount" gorm:"type:int(11)"`
+	Created                  time.Time `json:"crated" gorm:"type:timestamp;default:CURRENT_TIMESTAMP"`
 }
 
 type QuizQuestion struct {
