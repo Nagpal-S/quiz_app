@@ -6,6 +6,7 @@ import (
 	"math/rand"
 	"net/http"
 	"quizapp/models"
+	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -257,72 +258,69 @@ type userInfo struct {
 	Status  string `json:"status" example:"1"`
 }
 
-type profileInfo struct {
-	ID     string `json:"userId" example:"1"`
-	Name   string `json:"name" example:"Shivam Nagpal"`
-	Image  string `json:"image" example:"url-of-the-image"`
-	Gender string `json:"gender" example:"Male"`
-	Phone  string `json:"phone" example:"0987656"`
-	Email  string `json:"email" example:"sn@gmail.com"`
-}
-
-// EditUserProfile This API edit user profile
+// EditUserProfile This API edits the user profile
 //
-//	@Summary		This API edit user profile
-//	@Description	This API edit user profile
+//	@Summary		This API edits the user profile
+//	@Description	This API edits the user profile
 //	@Schemes
-//	@Tags		User AUth
-//	@Accept		json
+//	@Tags		User Auth
+//	@Accept		multipart/form-data
 //	@Produce	json
-//	@Param		id	body		profileInfo	true	"this is user info json"
-//	@Success	200	{object}	editProfileResponse
+//	@Param		id		formData	string	true	"User ID"
+//	@Param		name	formData	string	true	"User Name"
+//	@Param		email	formData	string	true	"User Email"
+//	@Param		phone	formData	string	true	"User Phone"
+//	@Param		image	formData	string	true	"User Image"
+//	@Param		gender	formData	string	false	"User Gender (Male, Female, Others)"
+//	@Success	200		{object}	editProfileResponse
 //	@Router		/users/edit-user-profile [post]
 func (uc *UserController) EditUserProfile(c *gin.Context) {
-
-	var requestBody profileInfo
-
 	var user models.User
 
-	if err := c.BindJSON(&requestBody); err != nil {
+	// Parse form-data values
+	id := c.PostForm("id")
+	name := c.PostForm("name")
+	email := c.PostForm("email")
+	phone := c.PostForm("phone")
+	image := c.PostForm("image")
+	gender := c.PostForm("gender")
 
-		c.JSON(400, gin.H{"status": "0", "message": "Bad Request. Invalid parameters."})
+	// Validate mandatory fields
+	if id == "" || name == "" || email == "" || phone == "" || gender == "" || image == "" {
+		c.JSON(400, gin.H{"status": "0", "message": "Bad Request. Missing required parameters."})
 		return
-
 	}
 
-	if err := uc.DB.Where("id = ? AND register = 1", requestBody.ID).First(&user).Error; err != nil {
-
+	// Fetch the user from the database
+	if err := uc.DB.Where("id = ? AND register = 1", id).First(&user).Error; err != nil {
 		c.JSON(404, gin.H{
 			"status":  "0",
 			"message": "Invalid userId",
 		})
 		return
-
 	}
 
-	user.Name = requestBody.Name
-	user.Email = requestBody.Email
-	user.Phone = requestBody.Phone
-	user.Image = requestBody.Image
-	user.Gender = requestBody.Gender
+	// Update user info
+	user.Name = name
+	user.Email = email
+	user.Phone = phone
+	user.Image = image
+	user.Gender = gender
 
+	// Save the updated user info
 	if err := uc.DB.Save(&user).Error; err != nil {
-
 		c.JSON(500, gin.H{
-
 			"status":  "0",
 			"message": "Error while updating user info.",
 		})
 		return
-
 	}
 
+	// Respond with success
 	c.JSON(200, gin.H{
-
 		"status":  "1",
 		"message": "User info updated successfully.",
 	})
-
 }
 
 type editProfileResponse struct {
@@ -330,11 +328,11 @@ type editProfileResponse struct {
 	Message string `json:"message" example:"User info updated successfully."`
 }
 
-type requestTransaction struct {
-	UserId          uint    `json:"user_id" example:"1"`
-	Amount          float64 `json:"amount" example:"200"`
-	TransactionType string  `json:"transaction_type" example:"DEBIT"`
-}
+// var requestBody struct {
+// 	UserId          string  `json:"user_id" example:"1"`
+// 	Amount          float64 `json:"amount" example:"200"`
+// 	TransactionType string  `json:"transaction_type" example:"DEBIT"`
+// }
 
 // InitiateUserTransaction This API will make user transactions
 //
@@ -342,125 +340,124 @@ type requestTransaction struct {
 //	@Description	This API will make user transactions
 //	@Schemes
 //	@Tags		User Wallet
-//	@Accept		json
+//	@Accept		multipart/form-data
 //	@Produce	json
-//	@Param		id	body		requestTransaction	true	"this is transaction info json"
-//	@Success	200	{object}	transactionResponse
+//	@Param		user_id				formData	string	true	"User ID"
+//	@Param		amount				formData	float64	true	"Transaction Amount"
+//	@Param		transaction_type	formData	string	true	"Transaction Type (CREDIT/DEBIT)"
+//	@Success	200					{object}	transactionResponse
 //	@Router		/users/initiate-user-transaction [post]
 func (uc *UserController) InitiateUserTransaction(c *gin.Context) {
 
-	// var requestBody struct {
-	// 	UserId          string  `json:"user_id" example:"1"`
-	// 	Amount          float64 `json:"amount" example:"200"`
-	// 	TransactionType string  `json:"transaction_type" example:"DEBIT"`
-	// }
-
-	var requestBody requestTransaction
+	// Extract form-data parameters
+	userId := c.PostForm("user_id")
+	amountStr := c.PostForm("amount")
+	transactionType := c.PostForm("transaction_type")
 
 	var wallet models.UserWallet
 	var transaction models.UserTransactions
 	var user models.User
 
-	if err := c.ShouldBindJSON(&requestBody); err != nil {
-
+	// Validate required fields
+	if userId == "" || amountStr == "" || transactionType == "" {
 		c.JSON(400, gin.H{
-
 			"status":  "0",
-			"message": "Bad request." + err.Error(),
+			"message": "Bad request. All fields (user_id, amount, transaction_type) are required.",
 		})
 		return
-
 	}
-	// check valid user
-	if err := uc.DB.Where("id = ? AND register = 1", requestBody.UserId).Take(&user).Error; err != nil {
-		c.JSON(500, gin.H{
 
+	// Convert amount to float64
+	amount, err := strconv.ParseFloat(amountStr, 64)
+	if err != nil {
+		c.JSON(400, gin.H{
+			"status":  "0",
+			"message": "Invalid amount. Must be a valid number.",
+		})
+		return
+	}
+
+	// Check valid user
+	if err := uc.DB.Where("id = ? AND register = 1", userId).Take(&user).Error; err != nil {
+		c.JSON(500, gin.H{
 			"status":  "0",
 			"message": "Invalid user_id, user not found. " + err.Error(),
-			// "message": "DB error while fetching user info. " + err.Error(),
 		})
 		return
 	}
 
-	// get user wallet
-	if err := uc.DB.Where("user_id = ?", requestBody.UserId).First(&wallet).Error; err != nil {
-
+	// Get user wallet
+	if err := uc.DB.Where("user_id = ?", userId).First(&wallet).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-
 			c.JSON(404, gin.H{
-
 				"status":  "0",
 				"message": "User wallet not found.",
 			})
-
 		} else {
-
 			c.JSON(500, gin.H{
-
 				"status":  "0",
-				"message": "DB error while fetging user wallet. " + err.Error(),
+				"message": "DB error while fetching user wallet. " + err.Error(),
 			})
-
 		}
-
 		return
 	}
 
-	// manage transaction for DEBIT and CREDIT
-
-	// if transaction is debit
-	if requestBody.TransactionType == "DEBIT" {
-
-		if wallet.Amount < requestBody.Amount {
+	// Manage transaction for DEBIT and CREDIT
+	if transactionType == "DEBIT" {
+		// If transaction is debit
+		if wallet.Amount < amount {
 			c.JSON(500, gin.H{
-
 				"status":  "0",
-				"message": "Amount can not be debited. INSUFFICIENT BALANCE.",
+				"message": "Amount cannot be debited. INSUFFICIENT BALANCE.",
 			})
 			return
 		}
 
-		wallet.Amount -= requestBody.Amount
+		wallet.Amount -= amount
 		transaction.Title = "Withdrawal"
-	} else {
-		// if transaction is credit
-		wallet.Amount += requestBody.Amount
+	} else if transactionType == "CREDIT" {
+		// If transaction is credit
+		wallet.Amount += amount
 		transaction.Title = "Deposit"
-	}
-
-	transaction.Amount = requestBody.Amount
-	transaction.UserId = requestBody.UserId
-	transaction.TransactionType = requestBody.TransactionType
-
-	// create transaction
-	if err := uc.DB.Create(&transaction).Error; err != nil {
-		c.JSON(500, gin.H{
-
+	} else {
+		c.JSON(400, gin.H{
 			"status":  "0",
-			"message": "DB error while creating transaction",
+			"message": "Invalid transaction type. Must be CREDIT or DEBIT.",
 		})
 		return
 	}
 
-	// update wallet
+	transaction.Amount = amount
+	transaction.UserId = user.ID
+	transaction.TransactionType = transactionType
+
+	// Create transaction
+	if err := uc.DB.Create(&transaction).Error; err != nil {
+		c.JSON(500, gin.H{
+			"status":  "0",
+			"message": "DB error while creating transaction.",
+		})
+		return
+	}
+
+	// Update wallet
 	if err := uc.DB.Model(&wallet).Update("amount", wallet.Amount).Error; err != nil {
 		c.JSON(500, gin.H{
 			"status":  "0",
-			"message": "DB error while updating wallet",
+			"message": "DB error while updating wallet.",
 		})
 		return
 	}
 
 	c.JSON(200, gin.H{
 		"status":  "1",
-		"message": "Transaction successfull and user wallet updated.",
+		"message": "Transaction successful and user wallet updated.",
 	})
-
 }
 
 type transactionResponse struct {
 	Status  string `json:"status" example:"1"`
-	Message string `json:"message" example:"User info updated successfully."`
+	Message string `json:"message" example:"Transaction successful and user wallet updated."`
 }
 
 type TResponse struct {

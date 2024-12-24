@@ -217,26 +217,58 @@ const docTemplate = `{
         },
         "/users/edit-user-profile": {
             "post": {
-                "description": "This API edit user profile",
+                "description": "This API edits the user profile",
                 "consumes": [
-                    "application/json"
+                    "multipart/form-data"
                 ],
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "User AUth"
+                    "User Auth"
                 ],
-                "summary": "This API edit user profile",
+                "summary": "This API edits the user profile",
                 "parameters": [
                     {
-                        "description": "this is user info json",
+                        "type": "string",
+                        "description": "User ID",
                         "name": "id",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/controllers.profileInfo"
-                        }
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "User Name",
+                        "name": "name",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "User Email",
+                        "name": "email",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "User Phone",
+                        "name": "phone",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "User Image",
+                        "name": "image",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "User Gender (Male, Female, Others)",
+                        "name": "gender",
+                        "in": "formData"
                     }
                 ],
                 "responses": {
@@ -317,7 +349,7 @@ const docTemplate = `{
             "post": {
                 "description": "This API will make user transactions",
                 "consumes": [
-                    "application/json"
+                    "multipart/form-data"
                 ],
                 "produces": [
                     "application/json"
@@ -328,13 +360,25 @@ const docTemplate = `{
                 "summary": "This API will make user transactions",
                 "parameters": [
                     {
-                        "description": "this is transaction info json",
-                        "name": "id",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/controllers.requestTransaction"
-                        }
+                        "type": "string",
+                        "description": "User ID",
+                        "name": "user_id",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "number",
+                        "description": "Transaction Amount",
+                        "name": "amount",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Transaction Type (CREDIT/DEBIT)",
+                        "name": "transaction_type",
+                        "in": "formData",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -618,35 +662,6 @@ const docTemplate = `{
                 }
             }
         },
-        "controllers.profileInfo": {
-            "type": "object",
-            "properties": {
-                "email": {
-                    "type": "string",
-                    "example": "sn@gmail.com"
-                },
-                "gender": {
-                    "type": "string",
-                    "example": "Male"
-                },
-                "image": {
-                    "type": "string",
-                    "example": "url-of-the-image"
-                },
-                "name": {
-                    "type": "string",
-                    "example": "Shivam Nagpal"
-                },
-                "phone": {
-                    "type": "string",
-                    "example": "0987656"
-                },
-                "userId": {
-                    "type": "string",
-                    "example": "1"
-                }
-            }
-        },
         "controllers.quizInfo": {
             "type": "object",
             "properties": {
@@ -704,29 +719,12 @@ const docTemplate = `{
                 }
             }
         },
-        "controllers.requestTransaction": {
-            "type": "object",
-            "properties": {
-                "amount": {
-                    "type": "number",
-                    "example": 200
-                },
-                "transaction_type": {
-                    "type": "string",
-                    "example": "DEBIT"
-                },
-                "user_id": {
-                    "type": "integer",
-                    "example": 1
-                }
-            }
-        },
         "controllers.transactionResponse": {
             "type": "object",
             "properties": {
                 "message": {
                     "type": "string",
-                    "example": "User info updated successfully."
+                    "example": "Transaction successful and user wallet updated."
                 },
                 "status": {
                     "type": "string",
