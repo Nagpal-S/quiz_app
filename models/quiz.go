@@ -35,6 +35,13 @@ type QuizQuestion struct {
 	CreatedAt     time.Time `gorm:"type:timestamp;default:CURRENT_TIMESTAMP" json:"created_at"`
 }
 
+type ContestRules struct {
+	ID         uint64    `gorm:"primaryKey;autoIncrement" json:"id"`
+	CategoryID uint64    `gorm:"not null;index" json:"category_id"` // Foreign key
+	Rule       string    `gorm:"not null;index" json:"rule"`        // Foreign key
+	CreatedAt  time.Time `gorm:"type:timestamp;default:CURRENT_TIMESTAMP" json:"created_at"`
+}
+
 type UserJoinContest struct {
 	ID         uint64    `gorm:"primaryKey;autoIncrement" json:"id"`
 	CategoryID uint64    `gorm:"not null;index" json:"category_id"` // Foreign key
@@ -48,6 +55,15 @@ type UserJoinContestHistory struct {
 	CategoryID uint64    `gorm:"not null;index" json:"category_id"` // Foreign key
 	UserID     uint      `gorm:"not null;index" json:"user_id"`     // Foreign key
 	JoinedAt   time.Time `gorm:"type:timestamp;default:CURRENT_TIMESTAMP" json:"joined_at"`
+}
+
+type ContestPrize struct {
+	ID         uint64    `gorm:"primaryKey;autoIncrement" json:"id"`
+	CategoryID uint64    `gorm:"not null;index" json:"category_id"` // Foreign key
+	RankFrom   uint      `gorm:"not null;index" json:"rank_from"`   // Foreign key
+	RankTo     uint      `gorm:"not null;index" json:"rank_to"`     // Foreign key
+	Winning    float64   `gorm:"not null;index" json:"winning"`     // Foreign key
+	CreatedAt  time.Time `gorm:"type:timestamp;default:CURRENT_TIMESTAMP" json:"created_at"`
 }
 
 // MigrateUser migrates the User table
@@ -65,4 +81,12 @@ func MigrateUserJoinContest(db *gorm.DB) {
 
 func MigrateUserJoinContestHistory(db *gorm.DB) {
 	db.AutoMigrate(&UserJoinContestHistory{})
+}
+
+func MigrateContestRules(db *gorm.DB) {
+	db.AutoMigrate(&ContestRules{})
+}
+
+func MigrateContestPrize(db *gorm.DB) {
+	db.AutoMigrate(&ContestPrize{})
 }

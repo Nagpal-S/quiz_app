@@ -66,6 +66,40 @@ definitions:
         example: "1"
         type: string
     type: object
+  controllers.Prize:
+    properties:
+      category_id:
+        example: 1
+        type: integer
+      created_at:
+        example: "2024-12-26T19:08:03+05:30"
+        type: string
+      id:
+        example: 1
+        type: integer
+      rank_from:
+        example: 1
+        type: integer
+      rank_to:
+        example: 1
+        type: integer
+      winning:
+        example: 25000
+        type: number
+    type: object
+  controllers.PrizesResponse:
+    properties:
+      details:
+        items:
+          $ref: '#/definitions/controllers.Prize'
+        type: array
+      message:
+        example: Prizes list found.
+        type: string
+      status:
+        example: "1"
+        type: string
+    type: object
   controllers.Question:
     properties:
       category_id:
@@ -125,6 +159,34 @@ definitions:
         type: object
       message:
         example: Quiz question list found.
+        type: string
+      status:
+        example: "1"
+        type: string
+    type: object
+  controllers.Rule:
+    properties:
+      category_id:
+        example: 1
+        type: integer
+      created_at:
+        example: "2024-12-25T16:11:37+05:30"
+        type: string
+      id:
+        example: 1
+        type: integer
+      rule:
+        example: Complete question on time
+        type: string
+    type: object
+  controllers.RulesResponse:
+    properties:
+      details:
+        items:
+          $ref: '#/definitions/controllers.Rule'
+        type: array
+      message:
+        example: Rules list found
         type: string
       status:
         example: "1"
@@ -350,6 +412,27 @@ paths:
       summary: This API will list contest joined by user
       tags:
       - Quizes
+  /quizes/get-contest-prize-list-by-category/{category_id}:
+    get:
+      consumes:
+      - application/json
+      description: This API will provide contest prizes list by category/contest id
+      parameters:
+      - description: category_id id
+        in: path
+        name: category_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/controllers.PrizesResponse'
+      summary: This API will provide contest prizes list by category/contest id
+      tags:
+      - Quizes
   /quizes/get-question-by-category/{category_id}:
     get:
       consumes:
@@ -369,6 +452,27 @@ paths:
           schema:
             $ref: '#/definitions/controllers.QuizResponse'
       summary: This API will provide list of quiz questions
+      tags:
+      - Quizes
+  /quizes/get-rules-list-by-category/{category_id}:
+    get:
+      consumes:
+      - application/json
+      description: This API will provide contest rules by category/contest id
+      parameters:
+      - description: category_id id
+        in: path
+        name: category_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/controllers.RulesResponse'
+      summary: This API will provide contest rules by category/contest id
       tags:
       - Quizes
   /quizes/user-join-contest:

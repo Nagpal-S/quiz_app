@@ -39,6 +39,8 @@ func main() {
 	models.MigrateUserTransactions(db)
 	models.MigrateUserJoinContest(db)
 	models.MigrateUserJoinContestHistory(db)
+	models.MigrateContestRules(db)
+	models.MigrateContestPrize(db)
 
 	router := gin.Default()
 

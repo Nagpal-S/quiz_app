@@ -508,3 +508,126 @@ type ContestInfo struct {
 	ContestAmount int    `json:"contest_amount" example:"10000"`
 	ContestID     int    `json:"contest_id" example:"1"`
 }
+
+// GetRulesByCategory This API will provide contest rules by category/contest id
+//
+//	@Summary		This API will provide contest rules by category/contest id
+//	@Description	This API will provide contest rules by category/contest id
+//	@Schemes
+//	@Tags		Quizes
+//	@Accept		json
+//	@Produce	json
+//	@Param		category_id	path		string	true	"category_id id"
+//	@Success	200	{object}	RulesResponse
+//	@Router		/quizes/get-rules-list-by-category/{category_id} [get]
+func (qc *QuizController) GetRulesByCategory(c *gin.Context) {
+
+	categoryId := c.Param("category_id")
+
+	var rules []models.ContestRules
+
+	if err := qc.DB.Where("category_id = ?", categoryId).Find(&rules).Error; err != nil {
+
+		c.JSON(500, gin.H{
+
+			"status":  "0",
+			"message": "DB error while getting rules list.",
+		})
+		return
+
+	}
+
+	if len(rules) == 0 {
+
+		c.JSON(404, gin.H{
+
+			"status":  "0",
+			"message": "Rules list found empty.",
+		})
+		return
+	}
+
+	c.JSON(200, gin.H{
+
+		"status":  "1",
+		"message": "Rules list found",
+		"details": rules,
+	})
+
+}
+
+type RulesResponse struct {
+	Details []Rule `json:"details"`
+	Message string `json:"message" example:"Rules list found"`
+	Status  string `json:"status" example:"1"`
+}
+
+type Rule struct {
+	ID         int    `json:"id" example:"1"`
+	CategoryID int    `json:"category_id" example:"1"`
+	Rule       string `json:"rule" example:"Complete question on time"`
+	CreatedAt  string `json:"created_at" example:"2024-12-25T16:11:37+05:30"`
+}
+
+// GetContestPrizes This API will provide contest prizes list by category/contest id
+//
+//	@Summary		This API will provide contest prizes list by category/contest id
+//	@Description	This API will provide contest prizes list by category/contest id
+//	@Schemes
+//	@Tags		Quizes
+//	@Accept		json
+//	@Produce	json
+//	@Param		category_id	path		string	true	"category_id id"
+//	@Success	200	{object}	PrizesResponse
+//	@Router		/quizes/get-contest-prize-list-by-category/{category_id} [get]
+func (qc *QuizController) GetContestPrizes(c *gin.Context) {
+
+	categoryId := c.Param("category_id")
+
+	var prizes []models.ContestPrize
+
+	if err := qc.DB.Where("category_id = ?", categoryId).Find(&prizes).Error; err != nil {
+
+		c.JSON(500, gin.H{
+
+			"status":  "0",
+			"message": "DB error while fetching prizes data.",
+		})
+		return
+
+	}
+
+	if len(prizes) == 0 {
+
+		c.JSON(404, gin.H{
+
+			"status":  "0",
+			"message": "Prizes list found empty for this contest.",
+		})
+		return
+
+	}
+
+	c.JSON(200, gin.H{
+
+		"status":  "1",
+		"message": "Prizes list found.",
+		"details": prizes,
+	})
+
+}
+
+type PrizesResponse struct {
+	Details []Prize `json:"details"`
+	Message string  `json:"message" example:"Prizes list found."`
+	Status  string  `json:"status" example:"1"`
+}
+
+type Prize struct {
+	ID         int     `json:"id" example:"1"`
+	CategoryID int     `json:"category_id" example:"1"`
+	RankFrom   int     `json:"rank_from" example:"1"`
+	RankTo     int     `json:"rank_to" example:"1"`
+	Winning    float64 `json:"winning" example:"25000"`
+	CreatedAt  string  `json:"created_at" example:"2024-12-26T19:08:03+05:30"`
+}

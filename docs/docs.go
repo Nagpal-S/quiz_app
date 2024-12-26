@@ -80,6 +80,38 @@ const docTemplate = `{
                 }
             }
         },
+        "/quizes/get-contest-prize-list-by-category/{category_id}": {
+            "get": {
+                "description": "This API will provide contest prizes list by category/contest id",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Quizes"
+                ],
+                "summary": "This API will provide contest prizes list by category/contest id",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "category_id id",
+                        "name": "category_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/controllers.PrizesResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/quizes/get-question-by-category/{category_id}": {
             "get": {
                 "description": "This API will provide list of quiz questions",
@@ -107,6 +139,38 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/controllers.QuizResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/quizes/get-rules-list-by-category/{category_id}": {
+            "get": {
+                "description": "This API will provide contest rules by category/contest id",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Quizes"
+                ],
+                "summary": "This API will provide contest rules by category/contest id",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "category_id id",
+                        "name": "category_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/controllers.RulesResponse"
                         }
                     }
                 }
@@ -527,6 +591,54 @@ const docTemplate = `{
                 }
             }
         },
+        "controllers.Prize": {
+            "type": "object",
+            "properties": {
+                "category_id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "created_at": {
+                    "type": "string",
+                    "example": "2024-12-26T19:08:03+05:30"
+                },
+                "id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "rank_from": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "rank_to": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "winning": {
+                    "type": "number",
+                    "example": 25000
+                }
+            }
+        },
+        "controllers.PrizesResponse": {
+            "type": "object",
+            "properties": {
+                "details": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/controllers.Prize"
+                    }
+                },
+                "message": {
+                    "type": "string",
+                    "example": "Prizes list found."
+                },
+                "status": {
+                    "type": "string",
+                    "example": "1"
+                }
+            }
+        },
         "controllers.Question": {
             "type": "object",
             "properties": {
@@ -609,6 +721,46 @@ const docTemplate = `{
                 "message": {
                     "type": "string",
                     "example": "Quiz question list found."
+                },
+                "status": {
+                    "type": "string",
+                    "example": "1"
+                }
+            }
+        },
+        "controllers.Rule": {
+            "type": "object",
+            "properties": {
+                "category_id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "created_at": {
+                    "type": "string",
+                    "example": "2024-12-25T16:11:37+05:30"
+                },
+                "id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "rule": {
+                    "type": "string",
+                    "example": "Complete question on time"
+                }
+            }
+        },
+        "controllers.RulesResponse": {
+            "type": "object",
+            "properties": {
+                "details": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/controllers.Rule"
+                    }
+                },
+                "message": {
+                    "type": "string",
+                    "example": "Rules list found"
                 },
                 "status": {
                     "type": "string",
