@@ -80,6 +80,38 @@ const docTemplate = `{
                 }
             }
         },
+        "/quizes/get-contest-leaderboard/{category_id}": {
+            "get": {
+                "description": "This API will provide user contest report",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Quizes"
+                ],
+                "summary": "This API will provide user contest report",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "category_id id",
+                        "name": "category_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/controllers.GetUserContestLeaderboardResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/quizes/get-contest-prize-list-by-category/{category_id}": {
             "get": {
                 "description": "This API will provide contest prizes list by category/contest id",
@@ -176,6 +208,45 @@ const docTemplate = `{
                 }
             }
         },
+        "/quizes/get-user-contest-result/{user_id}/{category_id}": {
+            "get": {
+                "description": "This API will provide user contest report",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Quizes"
+                ],
+                "summary": "This API will provide user contest report",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "user_id id",
+                        "name": "user_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "category_id id",
+                        "name": "category_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/controllers.GetUserContestReportResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/quizes/user-join-contest": {
             "post": {
                 "description": "This API will make user to join a contest",
@@ -210,6 +281,73 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/controllers.JoinContestResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/quizes/user-question-answer": {
+            "post": {
+                "description": "This API will record user response for questions",
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Quizes"
+                ],
+                "summary": "This API will record user response for questions",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "user id",
+                        "name": "user_id",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "quiz category id",
+                        "name": "category_id",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "quiz question id",
+                        "name": "question_id",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "quiz answer_given that user has given like a, b, c, d",
+                        "name": "answer_given",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "if user answer is corect or wrong pass CORRECT/WRONG",
+                        "name": "answer_type",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "time taken by user to solve the answer in seconds",
+                        "name": "time_taken",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/controllers.QAResponse"
                         }
                     }
                 }
@@ -533,6 +671,64 @@ const docTemplate = `{
                 }
             }
         },
+        "controllers.Details": {
+            "type": "object",
+            "properties": {
+                "quiz_result": {
+                    "description": "@Description List of quiz results for the user",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/controllers.QuizResult"
+                    }
+                },
+                "total_points": {
+                    "description": "@Description Total points scored by the user",
+                    "type": "integer"
+                }
+            }
+        },
+        "controllers.GetUserContestLeaderboardResponse": {
+            "type": "object",
+            "properties": {
+                "details": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/controllers.LeaderboardEntry"
+                    }
+                },
+                "message": {
+                    "type": "string",
+                    "example": "Leaderboard data found successfully."
+                },
+                "status": {
+                    "type": "string",
+                    "example": "1"
+                }
+            }
+        },
+        "controllers.GetUserContestReportResponse": {
+            "type": "object",
+            "properties": {
+                "details": {
+                    "description": "@Description Details of the quiz result",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/controllers.Details"
+                        }
+                    ]
+                },
+                "message": {
+                    "description": "@Description Message in the response",
+                    "type": "string",
+                    "example": "User result found"
+                },
+                "status": {
+                    "description": "@Description Status of the response",
+                    "type": "string",
+                    "example": "1"
+                }
+            }
+        },
         "controllers.JoinContestResponse": {
             "type": "object",
             "properties": {
@@ -562,6 +758,27 @@ const docTemplate = `{
                 "status": {
                     "type": "string",
                     "example": "1"
+                }
+            }
+        },
+        "controllers.LeaderboardEntry": {
+            "type": "object",
+            "properties": {
+                "points": {
+                    "type": "integer",
+                    "example": 175
+                },
+                "prize_amount": {
+                    "type": "integer",
+                    "example": 0
+                },
+                "user_image": {
+                    "type": "string",
+                    "example": "image"
+                },
+                "user_name": {
+                    "type": "string",
+                    "example": "snagpal"
                 }
             }
         },
@@ -632,6 +849,19 @@ const docTemplate = `{
                 "message": {
                     "type": "string",
                     "example": "Prizes list found."
+                },
+                "status": {
+                    "type": "string",
+                    "example": "1"
+                }
+            }
+        },
+        "controllers.QAResponse": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string",
+                    "example": "User response recorded successfully."
                 },
                 "status": {
                     "type": "string",
@@ -725,6 +955,56 @@ const docTemplate = `{
                 "status": {
                     "type": "string",
                     "example": "1"
+                }
+            }
+        },
+        "controllers.QuizResult": {
+            "type": "object",
+            "properties": {
+                "answer_a": {
+                    "description": "@Description Option A of the question",
+                    "type": "string",
+                    "example": "United States of America"
+                },
+                "answer_b": {
+                    "description": "@Description Option B of the question",
+                    "type": "string",
+                    "example": "England"
+                },
+                "answer_c": {
+                    "description": "@Description Option C of the question",
+                    "type": "string",
+                    "example": "India"
+                },
+                "answer_d": {
+                    "description": "@Description Option D of the question",
+                    "type": "string",
+                    "example": "Sri Lanka"
+                },
+                "correct_answer": {
+                    "description": "@Description The correct answer for the question",
+                    "type": "string",
+                    "example": "c"
+                },
+                "points": {
+                    "description": "@Description Points scored for this particular question",
+                    "type": "integer",
+                    "example": 80
+                },
+                "question": {
+                    "description": "@Description The question asked in the quiz",
+                    "type": "string",
+                    "example": "Where is Delhi?"
+                },
+                "user_answer": {
+                    "description": "@Description The answer given by the user",
+                    "type": "string",
+                    "example": "c"
+                },
+                "user_answer_type": {
+                    "description": "@Description Whether the answer is \"CORRECT\" or \"WRONG\"",
+                    "type": "string",
+                    "example": "CORRECT"
                 }
             }
         },

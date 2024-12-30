@@ -20,6 +20,9 @@ func QuizRoutes(router *gin.Engine, db *gorm.DB) {
 		quizGroup.GET("get-contest-joined-by-user/:user_id", QuizController.GetContestJoinedByUser)
 		quizGroup.GET("get-rules-list-by-category/:category_id", QuizController.GetRulesByCategory)
 		quizGroup.GET("get-contest-prize-list-by-category/:category_id", QuizController.GetContestPrizes)
+		quizGroup.POST("user-question-answer/", QuizController.UserContestResponse)
+		quizGroup.GET("get-user-contest-result/:user_id/:category_id", QuizController.GetUserContestReport)
+		quizGroup.GET("get-contest-leaderboard/:category_id", QuizController.GetUserContestLeaderboard)
 
 	}
 

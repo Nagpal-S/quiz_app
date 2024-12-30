@@ -26,6 +26,45 @@ definitions:
         example: GK
         type: string
     type: object
+  controllers.Details:
+    properties:
+      quiz_result:
+        description: '@Description List of quiz results for the user'
+        items:
+          $ref: '#/definitions/controllers.QuizResult'
+        type: array
+      total_points:
+        description: '@Description Total points scored by the user'
+        type: integer
+    type: object
+  controllers.GetUserContestLeaderboardResponse:
+    properties:
+      details:
+        items:
+          $ref: '#/definitions/controllers.LeaderboardEntry'
+        type: array
+      message:
+        example: Leaderboard data found successfully.
+        type: string
+      status:
+        example: "1"
+        type: string
+    type: object
+  controllers.GetUserContestReportResponse:
+    properties:
+      details:
+        allOf:
+        - $ref: '#/definitions/controllers.Details'
+        description: '@Description Details of the quiz result'
+      message:
+        description: '@Description Message in the response'
+        example: User result found
+        type: string
+      status:
+        description: '@Description Status of the response'
+        example: "1"
+        type: string
+    type: object
   controllers.JoinContestResponse:
     properties:
       message:
@@ -46,6 +85,21 @@ definitions:
         type: string
       status:
         example: "1"
+        type: string
+    type: object
+  controllers.LeaderboardEntry:
+    properties:
+      points:
+        example: 175
+        type: integer
+      prize_amount:
+        example: 0
+        type: integer
+      user_image:
+        example: image
+        type: string
+      user_name:
+        example: snagpal
         type: string
     type: object
   controllers.OTPResponse:
@@ -95,6 +149,15 @@ definitions:
         type: array
       message:
         example: Prizes list found.
+        type: string
+      status:
+        example: "1"
+        type: string
+    type: object
+  controllers.QAResponse:
+    properties:
+      message:
+        example: User response recorded successfully.
         type: string
       status:
         example: "1"
@@ -162,6 +225,45 @@ definitions:
         type: string
       status:
         example: "1"
+        type: string
+    type: object
+  controllers.QuizResult:
+    properties:
+      answer_a:
+        description: '@Description Option A of the question'
+        example: United States of America
+        type: string
+      answer_b:
+        description: '@Description Option B of the question'
+        example: England
+        type: string
+      answer_c:
+        description: '@Description Option C of the question'
+        example: India
+        type: string
+      answer_d:
+        description: '@Description Option D of the question'
+        example: Sri Lanka
+        type: string
+      correct_answer:
+        description: '@Description The correct answer for the question'
+        example: c
+        type: string
+      points:
+        description: '@Description Points scored for this particular question'
+        example: 80
+        type: integer
+      question:
+        description: '@Description The question asked in the quiz'
+        example: Where is Delhi?
+        type: string
+      user_answer:
+        description: '@Description The answer given by the user'
+        example: c
+        type: string
+      user_answer_type:
+        description: '@Description Whether the answer is "CORRECT" or "WRONG"'
+        example: CORRECT
         type: string
     type: object
   controllers.Rule:
@@ -412,6 +514,27 @@ paths:
       summary: This API will list contest joined by user
       tags:
       - Quizes
+  /quizes/get-contest-leaderboard/{category_id}:
+    get:
+      consumes:
+      - application/json
+      description: This API will provide user contest report
+      parameters:
+      - description: category_id id
+        in: path
+        name: category_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/controllers.GetUserContestLeaderboardResponse'
+      summary: This API will provide user contest report
+      tags:
+      - Quizes
   /quizes/get-contest-prize-list-by-category/{category_id}:
     get:
       consumes:
@@ -475,6 +598,32 @@ paths:
       summary: This API will provide contest rules by category/contest id
       tags:
       - Quizes
+  /quizes/get-user-contest-result/{user_id}/{category_id}:
+    get:
+      consumes:
+      - application/json
+      description: This API will provide user contest report
+      parameters:
+      - description: user_id id
+        in: path
+        name: user_id
+        required: true
+        type: string
+      - description: category_id id
+        in: path
+        name: category_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/controllers.GetUserContestReportResponse'
+      summary: This API will provide user contest report
+      tags:
+      - Quizes
   /quizes/user-join-contest:
     post:
       consumes:
@@ -499,6 +648,52 @@ paths:
           schema:
             $ref: '#/definitions/controllers.JoinContestResponse'
       summary: This API will make user to join a contest
+      tags:
+      - Quizes
+  /quizes/user-question-answer:
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      description: This API will record user response for questions
+      parameters:
+      - description: user id
+        in: formData
+        name: user_id
+        required: true
+        type: integer
+      - description: quiz category id
+        in: formData
+        name: category_id
+        required: true
+        type: string
+      - description: quiz question id
+        in: formData
+        name: question_id
+        required: true
+        type: string
+      - description: quiz answer_given that user has given like a, b, c, d
+        in: formData
+        name: answer_given
+        required: true
+        type: string
+      - description: if user answer is corect or wrong pass CORRECT/WRONG
+        in: formData
+        name: answer_type
+        required: true
+        type: string
+      - description: time taken by user to solve the answer in seconds
+        in: formData
+        name: time_taken
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/controllers.QAResponse'
+      summary: This API will record user response for questions
       tags:
       - Quizes
   /upload/file:

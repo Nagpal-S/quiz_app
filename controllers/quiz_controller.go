@@ -3,6 +3,7 @@ package controllers
 import (
 	"errors"
 	"quizapp/models"
+	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -12,6 +13,8 @@ import (
 type QuizController struct {
 	DB *gorm.DB
 }
+
+// =============================================== GetQuizCategories start ========================================================
 
 // GetQuizCategories This API will provide list of quiz categories
 //
@@ -38,9 +41,9 @@ func (qc *QuizController) GetQuizCategories(c *gin.Context) {
 		return
 	}
 
-	// If no categories found, return a 404 response
+	// If no categories found, return a 204 response
 	if len(quizCategories) == 0 {
-		c.JSON(404, gin.H{
+		c.JSON(204, gin.H{
 			"status":  "0",
 			"message": "Category list data found empty.",
 		})
@@ -79,7 +82,6 @@ func (qc *QuizController) GetQuizCategories(c *gin.Context) {
 	})
 }
 
-// categoryInfo Struct to represent the API response for Swagger documentation.
 type categoryInfo struct {
 	Details []struct {
 		ID                   int    `json:"id" example:"1"`
@@ -97,6 +99,8 @@ type categoryInfo struct {
 	Message string `json:"message" example:"Category list data found."`
 	Status  string `json:"status" example:"1"`
 }
+
+// =============================================== GetQuizByCategory start ========================================================
 
 // GetQuizByCategory This API will provide list of quiz questions
 //
@@ -120,7 +124,7 @@ func (qc *QuizController) GetQuizByCategory(c *gin.Context) {
 
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 
-			c.JSON(404, gin.H{
+			c.JSON(204, gin.H{
 
 				"status":  "0",
 				"message": "Category not found or category not exist.",
@@ -153,7 +157,7 @@ func (qc *QuizController) GetQuizByCategory(c *gin.Context) {
 
 	if len(quiz) == 0 {
 
-		c.JSON(404, gin.H{
+		c.JSON(204, gin.H{
 
 			"status":  "0",
 			"message": "Quiz question list found empty.",
@@ -206,6 +210,8 @@ type Question struct {
 	CreatedAt     string `json:"created_at" example:"2024-12-18T14:16:53+05:30"`
 }
 
+// =============================================== UserJoinContest start ========================================================
+
 // UserJoinContest This API will make user to join a contest
 //
 //	@Summary		This API will make user to join a contest
@@ -234,7 +240,7 @@ func (qc *QuizController) UserJoinContest(c *gin.Context) {
 
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 
-			c.JSON(404, gin.H{
+			c.JSON(204, gin.H{
 
 				"status":  "0",
 				"message": "Invalid user_id or user not found. " + err.Error(),
@@ -258,7 +264,7 @@ func (qc *QuizController) UserJoinContest(c *gin.Context) {
 
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 
-			c.JSON(404, gin.H{
+			c.JSON(204, gin.H{
 
 				"status":  "0",
 				"message": "Invalid category_id or category not found. " + err.Error(),
@@ -283,7 +289,7 @@ func (qc *QuizController) UserJoinContest(c *gin.Context) {
 
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 
-			c.JSON(404, gin.H{
+			c.JSON(204, gin.H{
 
 				"status":  "0",
 				"message": "User wallet not found. " + err.Error(),
@@ -405,6 +411,8 @@ type JoinContestResponse struct {
 	Message string `json:"message" example:"Contest joined successfully."`
 }
 
+// =============================================== GetContestJoinedByUser start ========================================================
+
 // GetContestJoinedByUser This API will list contest joined by user
 //
 //	@Summary		This API will list contest joined by user
@@ -427,7 +435,7 @@ func (qc *QuizController) GetContestJoinedByUser(c *gin.Context) {
 
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 
-			c.JSON(404, gin.H{
+			c.JSON(204, gin.H{
 
 				"status":  "0",
 				"message": "Invalid user_id or user not found. " + err.Error(),
@@ -459,7 +467,7 @@ func (qc *QuizController) GetContestJoinedByUser(c *gin.Context) {
 
 	if len(userJoinInfo) == 0 {
 
-		c.JSON(404, gin.H{
+		c.JSON(204, gin.H{
 
 			"status":  "0",
 			"message": "Contest list found empty.",
@@ -509,6 +517,8 @@ type ContestInfo struct {
 	ContestID     int    `json:"contest_id" example:"1"`
 }
 
+// =============================================== GetRulesByCategory start ========================================================
+
 // GetRulesByCategory This API will provide contest rules by category/contest id
 //
 //	@Summary		This API will provide contest rules by category/contest id
@@ -539,7 +549,7 @@ func (qc *QuizController) GetRulesByCategory(c *gin.Context) {
 
 	if len(rules) == 0 {
 
-		c.JSON(404, gin.H{
+		c.JSON(204, gin.H{
 
 			"status":  "0",
 			"message": "Rules list found empty.",
@@ -568,6 +578,8 @@ type Rule struct {
 	Rule       string `json:"rule" example:"Complete question on time"`
 	CreatedAt  string `json:"created_at" example:"2024-12-25T16:11:37+05:30"`
 }
+
+// =============================================== GetContestPrizes start ========================================================
 
 // GetContestPrizes This API will provide contest prizes list by category/contest id
 //
@@ -599,7 +611,7 @@ func (qc *QuizController) GetContestPrizes(c *gin.Context) {
 
 	if len(prizes) == 0 {
 
-		c.JSON(404, gin.H{
+		c.JSON(204, gin.H{
 
 			"status":  "0",
 			"message": "Prizes list found empty for this contest.",
@@ -630,4 +642,528 @@ type Prize struct {
 	RankTo     int     `json:"rank_to" example:"1"`
 	Winning    float64 `json:"winning" example:"25000"`
 	CreatedAt  string  `json:"created_at" example:"2024-12-26T19:08:03+05:30"`
+}
+
+// =============================================== UserContestResponse start ========================================================
+
+// UserContestResponse This API will record user response for questions
+//
+//	@Summary		This API will record user response for questions
+//	@Description	This API will record user response for questions
+//	@Schemes
+//	@Tags		Quizes
+//	@Accept		application/x-www-form-urlencoded
+//	@Produce	json
+//	@Param		user_id	formData		int	true	"user id"
+//	@Param		category_id	formData		string	true	"quiz category id"
+//	@Param		question_id	formData		string	true	"quiz question id"
+//	@Param		answer_given	formData		string	true	"quiz answer_given that user has given like a, b, c, d"
+//	@Param		answer_type	formData		string	true	"if user answer is corect or wrong pass CORRECT/WRONG"
+//	@Param		time_taken	formData		string	true	"time taken by user to solve the answer in seconds"
+//	@Success	200	{object}	QAResponse
+//	@Router		/quizes/user-question-answer [post]
+func (qc *QuizController) UserContestResponse(c *gin.Context) {
+
+	userId := c.PostForm("user_id")
+	questionId := c.PostForm("question_id")
+	categoryId := c.PostForm("category_id")
+	answerGiven := c.PostForm("answer_given")
+	answerType := c.PostForm("answer_type")
+	timeTaken := c.PostForm("time_taken")
+
+	var userContestResult []models.UserContestResults
+	var category models.QuizCategory
+	var question models.QuizQuestion
+	var userJoinContest models.UserJoinContest
+	var contestPointsChart models.ContestPointsChart
+
+	if err := qc.DB.Where("id = ?", categoryId).First(&category).Error; err != nil {
+
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+
+			c.JSON(204, gin.H{
+
+				"status":  "0",
+				"message": "Invalid category id or category not found.",
+			})
+
+		} else {
+
+			c.JSON(500, gin.H{
+
+				"status":  "0",
+				"message": "DB error while fetching category details.",
+			})
+
+		}
+		return
+
+	}
+
+	if category.QuizTime.After(time.Now()) {
+
+		c.JSON(422, gin.H{
+
+			"status":  "0",
+			"message": "Contest not started yet.",
+		})
+		return
+
+	}
+
+	if err := qc.DB.Where("id = ? AND category_id = ?", questionId, categoryId).First(&question).Error; err != nil {
+
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+
+			c.JSON(204, gin.H{
+
+				"status":  "0",
+				"message": "Invalid question id or question found with this category.",
+			})
+
+		} else {
+
+			c.JSON(500, gin.H{
+
+				"status":  "0",
+				"message": "DB error while getting question details.",
+			})
+
+		}
+
+		return
+
+	}
+
+	if err := qc.DB.Where("category_id = ? AND user_id = ?", categoryId, userId).First(&userJoinContest).Error; err != nil {
+
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+
+			c.JSON(204, gin.H{
+
+				"status":  "0",
+				"message": "User not found in this contest.",
+			})
+
+		} else {
+
+			c.JSON(500, gin.H{
+
+				"status":  "0",
+				"message": "DB error while fetching user join data.",
+			})
+
+		}
+		return
+
+	}
+
+	if err := qc.DB.Where("category_id = ? AND question_id = ? AND user_id = ?", categoryId, questionId, userId).Find(&userContestResult).Error; err != nil {
+
+		c.JSON(500, gin.H{
+
+			"status":  "0",
+			"message": "DB error while fetching contest result.",
+		})
+		return
+
+	}
+
+	if len(userContestResult) > 0 {
+
+		c.JSON(422, gin.H{
+
+			"status":  "0",
+			"message": "Contest respose alredy given",
+		})
+		return
+
+	}
+
+	timeTakenConv, err := strconv.ParseUint(timeTaken, 10, 32)
+	if err != nil {
+
+		c.JSON(400, gin.H{
+
+			"status":  "0",
+			"message": "Invalid time passed",
+		})
+		return
+
+	}
+
+	if err := qc.DB.Where("time_from <= ? AND time_to >= ?", timeTaken, timeTaken).First(&contestPointsChart).Error; err != nil {
+
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+
+			c.JSON(204, gin.H{
+
+				"status":  "0",
+				"message": "Time details not found.",
+			})
+
+		} else {
+
+			c.JSON(500, gin.H{
+
+				"status":  "0",
+				"message": "DB error while fetching time details.",
+			})
+
+		}
+		return
+
+	}
+
+	var points uint
+
+	if answerType == "CORRECT" {
+
+		points = contestPointsChart.TotalCorrectAnswerPoint
+
+	} else {
+
+		points = contestPointsChart.TotalWrongAnswerPoint
+
+	}
+
+	var userContestResultData models.UserContestResults
+
+	userContestResultData.AnswerGiven = answerGiven
+	userContestResultData.AnswerType = answerType
+	userContestResultData.CategoryID = question.CategoryID
+	userContestResultData.CreatedAt = time.Now()
+	userContestResultData.Points = points
+	userContestResultData.QuestionID = question.ID
+	userContestResultData.TimeTaken = uint(timeTakenConv)
+	userIdUint, err := strconv.ParseUint(userId, 10, 32)
+	if err != nil {
+
+		c.JSON(500, gin.H{
+
+			"status":  "0",
+			"message": "Unexpected error",
+		})
+
+		return
+	}
+	userContestResultData.UserID = uint(userIdUint)
+
+	if err := qc.DB.Create(&userContestResultData).Error; err != nil {
+
+		c.JSON(500, gin.H{
+
+			"status":  "0",
+			"message": "DB erorr while addind data.",
+		})
+		return
+
+	}
+
+	c.JSON(201, gin.H{
+
+		"status":  "1",
+		"message": "User response recorded successfully.",
+	})
+
+}
+
+type QAResponse struct {
+	Message string `json:"message" example:"User response recorded successfully."`
+	Status  string `json:"status" example:"1"`
+}
+
+// =============================================== GetUserContestReport start ========================================================
+
+// GetUserContestReport This API will provide user contest report
+//
+//	@Summary		This API will provide user contest report
+//	@Description	This API will provide user contest report
+//	@Schemes
+//	@Tags		Quizes
+//	@Accept		json
+//	@Produce	json
+//	@Param		user_id	path		string	true	"user_id id"
+//	@Param		category_id	path		string	true	"category_id id"
+//	@Success	200	{object}	GetUserContestReportResponse
+//	@Router		/quizes/get-user-contest-result/{user_id}/{category_id} [get]
+func (qc *QuizController) GetUserContestReport(c *gin.Context) {
+
+	userId := c.Param("user_id")
+	categoryId := c.Param("category_id")
+
+	var category models.QuizCategory
+	var userJoinContest models.UserJoinContest
+	var question []models.QuizQuestion
+	var leaderboard models.UserContestLeaderboard
+
+	if err := qc.DB.Where("id = ?", categoryId).First(&category).Error; err != nil {
+
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+
+			c.JSON(204, gin.H{
+
+				"status":  "0",
+				"message": "Invalid category id or category not found.",
+			})
+
+		} else {
+
+			c.JSON(500, gin.H{
+
+				"status":  "0",
+				"message": "DB error while fetching category details.",
+			})
+
+		}
+		return
+
+	}
+
+	if err := qc.DB.Where("category_id = ? AND user_id = ?", categoryId, userId).First(&userJoinContest).Error; err != nil {
+
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+
+			c.JSON(204, gin.H{
+
+				"status":  "0",
+				"message": "User not found in this contest.",
+			})
+
+		} else {
+
+			c.JSON(500, gin.H{
+
+				"status":  "0",
+				"message": "DB error while fetching user join data.",
+			})
+
+		}
+		return
+
+	}
+
+	if err := qc.DB.Where("category_id = ?", categoryId).Find(&question).Error; err != nil {
+
+		c.JSON(500, gin.H{
+
+			"status":  "0",
+			"message": "DB error while getting question details.",
+		})
+
+		return
+
+	}
+
+	if len(question) == 0 {
+
+		c.JSON(204, gin.H{
+
+			"status":  "0",
+			"message": "No questions found.",
+		})
+		return
+	}
+
+	var response []gin.H
+	var points uint
+	for _, ques := range question {
+
+		var userAnswer string
+		var userAnswerType string
+		var ques_points uint
+
+		var userContestResult models.UserContestResults
+		if err := qc.DB.Where("category_id = ? AND question_id = ? AND user_id = ?", categoryId, ques.ID, userId).Take(&userContestResult).Error; err != nil {
+
+			points += 0
+			userAnswer = "N/A"
+			userAnswerType = "NA"
+			ques_points = 0
+
+		} else {
+
+			points += userContestResult.Points
+			userAnswer = userContestResult.AnswerGiven
+			userAnswerType = userContestResult.AnswerType
+			ques_points = userContestResult.Points
+
+		}
+
+		response = append(response, gin.H{
+
+			"question":         ques.Question,
+			"answer_a":         ques.OptionA,
+			"answer_b":         ques.OptionB,
+			"answer_c":         ques.OptionC,
+			"answer_d":         ques.OptionD,
+			"correct_answer":   ques.CorrectAnswer,
+			"user_answer":      userAnswer,
+			"user_answer_type": userAnswerType,
+			"points":           ques_points,
+		})
+
+	}
+
+	if err := qc.DB.Where("category_id = ? AND user_id = ?", categoryId, userId).First(&leaderboard).Error; err != nil {
+
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+
+			leaderboard.CategoryID = category.ID
+			userIdUint, err := strconv.ParseUint(userId, 10, 32)
+			if err != nil {
+
+				c.JSON(500, gin.H{
+
+					"status":  "0",
+					"message": "Unexpected error",
+				})
+
+				return
+			}
+			leaderboard.UserID = uint(userIdUint)
+			leaderboard.Points = points
+			leaderboard.PrizeAmount = 0
+
+			if createErr := qc.DB.Create(&leaderboard).Error; createErr != nil {
+				c.JSON(500, gin.H{
+					"status":  "0",
+					"message": "DB error while creating leaderboard",
+				})
+				return
+			}
+
+		} else {
+
+			c.JSON(500, gin.H{
+
+				"status":  "0",
+				"message": "DB error while creating leadeboard",
+			})
+			return
+
+		}
+
+	}
+
+	c.JSON(200, gin.H{
+
+		"status":  "1",
+		"message": "User result found",
+		"details": gin.H{
+			"total_points": points,
+			"quiz_result":  response,
+		},
+	})
+
+}
+
+type GetUserContestReportResponse struct {
+	Status  string  `json:"status" example:"1"`                  // @Description Status of the response
+	Message string  `json:"message" example:"User result found"` // @Description Message in the response
+	Details Details `json:"details"`                             // @Description Details of the quiz result
+}
+
+type Details struct {
+	QuizResult  []QuizResult `json:"quiz_result"`  // @Description List of quiz results for the user
+	TotalPoints int          `json:"total_points"` // @Description Total points scored by the user
+}
+
+type QuizResult struct {
+	Question       string `json:"question" example:"Where is Delhi?"`          // @Description The question asked in the quiz
+	AnswerA        string `json:"answer_a" example:"United States of America"` // @Description Option A of the question
+	AnswerB        string `json:"answer_b" example:"England"`                  // @Description Option B of the question
+	AnswerC        string `json:"answer_c" example:"India"`                    // @Description Option C of the question
+	AnswerD        string `json:"answer_d" example:"Sri Lanka"`                // @Description Option D of the question
+	CorrectAnswer  string `json:"correct_answer" example:"c"`                  // @Description The correct answer for the question
+	UserAnswer     string `json:"user_answer" example:"c"`                     // @Description The answer given by the user
+	UserAnswerType string `json:"user_answer_type" example:"CORRECT"`          // @Description Whether the answer is "CORRECT" or "WRONG"
+	Points         int    `json:"points" example:"80"`                         // @Description Points scored for this particular question
+}
+
+// =============================================== GetUserContestLeaderboard start ========================================================
+
+// GetUserContestLeaderboard This API will provide user contest report
+//
+//	@Summary		This API will provide user contest report
+//	@Description	This API will provide user contest report
+//	@Schemes
+//	@Tags		Quizes
+//	@Accept		json
+//	@Produce	json
+//	@Param		category_id	path		string	true	"category_id id"
+//	@Success	200	{object}	GetUserContestLeaderboardResponse
+//	@Router		/quizes/get-contest-leaderboard/{category_id} [get]
+func (qc *QuizController) GetUserContestLeaderboard(c *gin.Context) {
+
+	categoryId := c.Param("category_id")
+	var leaderboard []models.UserContestLeaderboard
+
+	if err := qc.DB.Where("category_id = ?", categoryId).Order("points DESC").Find(&leaderboard).Error; err != nil {
+
+		c.JSON(500, gin.H{
+			"status":  "0",
+			"message": "DB error while fetching leaderboard.",
+		})
+		return
+
+	}
+
+	if len(leaderboard) == 0 {
+
+		c.JSON(204, gin.H{
+
+			"status":  "0",
+			"message": "Leaderboard data not found",
+		})
+		return
+
+	}
+
+	var response []gin.H
+	for _, data := range leaderboard {
+
+		var user models.User
+		if err := qc.DB.Where("id = ?", data.UserID).First(&user).Error; err != nil {
+
+			c.JSON(500, gin.H{
+
+				"status":  "0",
+				"message": "unexpected error",
+			})
+			return
+
+		}
+
+		response = append(response, gin.H{
+
+			"user_name":    user.Name,
+			"user_image":   user.Image,
+			"points":       data.Points,
+			"prize_amount": data.PrizeAmount,
+		})
+
+	}
+
+	c.JSON(200, gin.H{
+
+		"status":  "1",
+		"message": "Leaderboard data found successfully.",
+		"details": response,
+	})
+
+}
+
+type GetUserContestLeaderboardResponse struct {
+	Status  string             `json:"status" example:"1"`
+	Message string             `json:"message" example:"Leaderboard data found successfully."`
+	Details []LeaderboardEntry `json:"details"`
+}
+
+// LeaderboardEntry is the structure for each entry in the leaderboard
+type LeaderboardEntry struct {
+	Points      uint   `json:"points" example:"175"`
+	PrizeAmount uint   `json:"prize_amount" example:"0"`
+	UserImage   string `json:"user_image" example:"image"`
+	UserName    string `json:"user_name" example:"snagpal"`
 }

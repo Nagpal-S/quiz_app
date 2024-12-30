@@ -293,7 +293,7 @@ func (uc *UserController) EditUserProfile(c *gin.Context) {
 
 	// Fetch the user from the database
 	if err := uc.DB.Where("id = ? AND register = 1", id).First(&user).Error; err != nil {
-		c.JSON(404, gin.H{
+		c.JSON(204, gin.H{
 			"status":  "0",
 			"message": "Invalid userId",
 		})
@@ -389,7 +389,7 @@ func (uc *UserController) InitiateUserTransaction(c *gin.Context) {
 	// Get user wallet
 	if err := uc.DB.Where("user_id = ?", userId).First(&wallet).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			c.JSON(404, gin.H{
+			c.JSON(204, gin.H{
 				"status":  "0",
 				"message": "User wallet not found.",
 			})
@@ -487,7 +487,7 @@ func (uc *UserController) GetUserWalletDetails(c *gin.Context) {
 
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 
-			c.JSON(404, gin.H{
+			c.JSON(204, gin.H{
 
 				"status":  "0",
 				"message": "User wallet not found. " + err.Error(),

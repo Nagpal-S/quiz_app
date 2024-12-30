@@ -66,6 +66,38 @@ type ContestPrize struct {
 	CreatedAt  time.Time `gorm:"type:timestamp;default:CURRENT_TIMESTAMP" json:"created_at"`
 }
 
+type UserContestResults struct {
+	ID          uint64    `gorm:"primaryKey;autoIncrement" json:"id"`
+	CategoryID  uint64    `gorm:"not null;index" json:"category_id"` // Foreign key
+	QuestionID  uint64    `gorm:"not null;index" json:"question_id"` // Foreign key
+	UserID      uint      `gorm:"not null;index" json:"user_id"`     // Foreign key
+	AnswerGiven string    `gorm:"not null;index" json:"answer_given"`
+	AnswerType  string    `gorm:"type:enum('CORRECT', 'WRONG');not null;check:answer_type IN ('CORRECT', 'WRONG')" json:"answer_type"`
+	TimeTaken   uint      `gorm:"not null;index" json:"time_taken"`
+	Points      uint      `gorm:"not null;index" json:"points"`
+	CreatedAt   time.Time `gorm:"type:timestamp;default:CURRENT_TIMESTAMP" json:"created_at"`
+}
+
+type ContestPointsChart struct {
+	ID                      uint64    `gorm:"primaryKey;autoIncrement" json:"id"`
+	TimeFrom                uint      `gorm:"not null;index" json:"time_from"`
+	TimeTo                  uint      `gorm:"not null;index" json:"time_to"`
+	BasePoint               uint      `gorm:"not null;index" json:"base_point"`
+	CorrectAnswerPoint      uint      `gorm:"not null;index" json:"correct_answer_point"`
+	TotalCorrectAnswerPoint uint      `gorm:"not null;index" json:"total_correct_answer_point"`
+	WrongAnswerPoint        uint      `gorm:"not null;index" json:"wrong_answer_point"`
+	TotalWrongAnswerPoint   uint      `gorm:"not null;index" json:"total_wrong_answer_point"`
+	CreatedAt               time.Time `gorm:"type:timestamp;default:CURRENT_TIMESTAMP" json:"created_at"`
+}
+
+type UserContestLeaderboard struct {
+	ID          uint64 `gorm:"primaryKey;autoIncrement" json:"id"`
+	CategoryID  uint64 `gorm:"not null;index" json:"category_id"` // Foreign key
+	UserID      uint   `gorm:"not null;index" json:"user_id"`     // Foreign key
+	Points      uint   `gorm:"not null;index" json:"points"`
+	PrizeAmount uint   `gorm:"not null;index" json:"prize_amount"`
+}
+
 // MigrateUser migrates the User table
 func MigrateQuizCategory(db *gorm.DB) {
 	db.AutoMigrate(&QuizCategory{})
@@ -89,4 +121,16 @@ func MigrateContestRules(db *gorm.DB) {
 
 func MigrateContestPrize(db *gorm.DB) {
 	db.AutoMigrate(&ContestPrize{})
+}
+
+func MigrateUserContestResult(db *gorm.DB) {
+	db.AutoMigrate(&UserContestResults{})
+}
+
+func MigrateContestPointsChart(db *gorm.DB) {
+	db.AutoMigrate(&ContestPointsChart{})
+}
+
+func MigrateUserContestLeaderboard(db *gorm.DB) {
+	db.AutoMigrate(&UserContestLeaderboard{})
 }
