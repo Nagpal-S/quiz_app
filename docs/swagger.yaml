@@ -11,6 +11,48 @@ definitions:
         example: "1"
         type: string
     type: object
+  controllers.BannerDetails:
+    properties:
+      ID:
+        description: Unique ID of the banner
+        example: 1
+        type: integer
+      banner:
+        description: URL of the banner image
+        example: image-url
+        type: string
+      crated:
+        description: Timestamp of banner creation
+        example: "2024-12-31T17:00:00+05:30"
+        type: string
+    type: object
+  controllers.ContestHistoryInfo:
+    properties:
+      contest_amount:
+        example: 10000
+        type: integer
+      contest_date:
+        example: "2024-12-21T18:00:00+05:30"
+        type: string
+      contest_end_date:
+        example: "2024-12-21T18:00:00+05:40"
+        type: string
+      contest_id:
+        example: 1
+        type: integer
+      contest_name:
+        example: GK
+        type: string
+      contest_question_duration:
+        example: 15
+        type: integer
+      points:
+        example: 175
+        type: integer
+      prize_amount:
+        example: 175
+        type: integer
+    type: object
   controllers.ContestInfo:
     properties:
       contest_amount:
@@ -19,12 +61,18 @@ definitions:
       contest_date:
         example: "2024-12-21T18:00:00+05:30"
         type: string
+      contest_end_date:
+        example: "2024-12-21T18:00:00+05:40"
+        type: string
       contest_id:
         example: 1
         type: integer
       contest_name:
         example: GK
         type: string
+      contest_question_duration:
+        example: 15
+        type: integer
     type: object
   controllers.Details:
     properties:
@@ -36,6 +84,22 @@ definitions:
       total_points:
         description: '@Description Total points scored by the user'
         type: integer
+    type: object
+  controllers.GetBannersListResponse:
+    properties:
+      details:
+        description: Array of banner details
+        items:
+          $ref: '#/definitions/controllers.BannerDetails'
+        type: array
+      message:
+        description: Response message
+        example: Banners list found.
+        type: string
+      status:
+        description: Status of the request
+        example: "1"
+        type: string
     type: object
   controllers.GetUserContestLeaderboardResponse:
     properties:
@@ -62,6 +126,19 @@ definitions:
         type: string
       status:
         description: '@Description Status of the response'
+        example: "1"
+        type: string
+    type: object
+  controllers.GetUserPlayedContestResponse:
+    properties:
+      details:
+        items:
+          $ref: '#/definitions/controllers.ContestHistoryInfo'
+        type: array
+      message:
+        example: Contest list found.
+        type: string
+      status:
         example: "1"
         type: string
     type: object
@@ -257,6 +334,10 @@ definitions:
         description: '@Description The question asked in the quiz'
         example: Where is Delhi?
         type: string
+      time_taken:
+        description: '@Description Points scored for this particular question'
+        example: 1
+        type: integer
       user_answer:
         description: '@Description The answer given by the user'
         example: c
@@ -598,6 +679,27 @@ paths:
       summary: This API will provide contest rules by category/contest id
       tags:
       - Quizes
+  /quizes/get-user-contest-history/{user_id}:
+    get:
+      consumes:
+      - application/json
+      description: This API will list contest history joined by user
+      parameters:
+      - description: user id
+        in: path
+        name: user_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/controllers.GetUserPlayedContestResponse'
+      summary: This API will list contest history joined by user
+      tags:
+      - Quizes
   /quizes/get-user-contest-result/{user_id}/{category_id}:
     get:
       consumes:
@@ -696,6 +798,21 @@ paths:
       summary: This API will record user response for questions
       tags:
       - Quizes
+  /settings/get-banners-list:
+    get:
+      consumes:
+      - application/json
+      description: This API will provide list of banners
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/controllers.GetBannersListResponse'
+      summary: This API will provide list of banners
+      tags:
+      - Settings
   /upload/file:
     post:
       consumes:

@@ -208,6 +208,38 @@ const docTemplate = `{
                 }
             }
         },
+        "/quizes/get-user-contest-history/{user_id}": {
+            "get": {
+                "description": "This API will list contest history joined by user",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Quizes"
+                ],
+                "summary": "This API will list contest history joined by user",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "user id",
+                        "name": "user_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/controllers.GetUserPlayedContestResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/quizes/get-user-contest-result/{user_id}/{category_id}": {
             "get": {
                 "description": "This API will provide user contest report",
@@ -348,6 +380,29 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/controllers.QAResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/settings/get-banners-list": {
+            "get": {
+                "description": "This API will provide list of banners",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Settings"
+                ],
+                "summary": "This API will provide list of banners",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/controllers.GetBannersListResponse"
                         }
                     }
                 }
@@ -650,6 +705,63 @@ const docTemplate = `{
                 }
             }
         },
+        "controllers.BannerDetails": {
+            "type": "object",
+            "properties": {
+                "ID": {
+                    "description": "Unique ID of the banner",
+                    "type": "integer",
+                    "example": 1
+                },
+                "banner": {
+                    "description": "URL of the banner image",
+                    "type": "string",
+                    "example": "image-url"
+                },
+                "crated": {
+                    "description": "Timestamp of banner creation",
+                    "type": "string",
+                    "example": "2024-12-31T17:00:00+05:30"
+                }
+            }
+        },
+        "controllers.ContestHistoryInfo": {
+            "type": "object",
+            "properties": {
+                "contest_amount": {
+                    "type": "integer",
+                    "example": 10000
+                },
+                "contest_date": {
+                    "type": "string",
+                    "example": "2024-12-21T18:00:00+05:30"
+                },
+                "contest_end_date": {
+                    "type": "string",
+                    "example": "2024-12-21T18:00:00+05:40"
+                },
+                "contest_id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "contest_name": {
+                    "type": "string",
+                    "example": "GK"
+                },
+                "contest_question_duration": {
+                    "type": "integer",
+                    "example": 15
+                },
+                "points": {
+                    "type": "integer",
+                    "example": 175
+                },
+                "prize_amount": {
+                    "type": "integer",
+                    "example": 175
+                }
+            }
+        },
         "controllers.ContestInfo": {
             "type": "object",
             "properties": {
@@ -661,6 +773,10 @@ const docTemplate = `{
                     "type": "string",
                     "example": "2024-12-21T18:00:00+05:30"
                 },
+                "contest_end_date": {
+                    "type": "string",
+                    "example": "2024-12-21T18:00:00+05:40"
+                },
                 "contest_id": {
                     "type": "integer",
                     "example": 1
@@ -668,6 +784,10 @@ const docTemplate = `{
                 "contest_name": {
                     "type": "string",
                     "example": "GK"
+                },
+                "contest_question_duration": {
+                    "type": "integer",
+                    "example": 15
                 }
             }
         },
@@ -684,6 +804,28 @@ const docTemplate = `{
                 "total_points": {
                     "description": "@Description Total points scored by the user",
                     "type": "integer"
+                }
+            }
+        },
+        "controllers.GetBannersListResponse": {
+            "type": "object",
+            "properties": {
+                "details": {
+                    "description": "Array of banner details",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/controllers.BannerDetails"
+                    }
+                },
+                "message": {
+                    "description": "Response message",
+                    "type": "string",
+                    "example": "Banners list found."
+                },
+                "status": {
+                    "description": "Status of the request",
+                    "type": "string",
+                    "example": "1"
                 }
             }
         },
@@ -724,6 +866,25 @@ const docTemplate = `{
                 },
                 "status": {
                     "description": "@Description Status of the response",
+                    "type": "string",
+                    "example": "1"
+                }
+            }
+        },
+        "controllers.GetUserPlayedContestResponse": {
+            "type": "object",
+            "properties": {
+                "details": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/controllers.ContestHistoryInfo"
+                    }
+                },
+                "message": {
+                    "type": "string",
+                    "example": "Contest list found."
+                },
+                "status": {
                     "type": "string",
                     "example": "1"
                 }
@@ -995,6 +1156,11 @@ const docTemplate = `{
                     "description": "@Description The question asked in the quiz",
                     "type": "string",
                     "example": "Where is Delhi?"
+                },
+                "time_taken": {
+                    "description": "@Description Points scored for this particular question",
+                    "type": "integer",
+                    "example": 1
                 },
                 "user_answer": {
                     "description": "@Description The answer given by the user",

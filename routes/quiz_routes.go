@@ -23,6 +23,7 @@ func QuizRoutes(router *gin.Engine, db *gorm.DB) {
 		quizGroup.POST("user-question-answer/", QuizController.UserContestResponse)
 		quizGroup.GET("get-user-contest-result/:user_id/:category_id", QuizController.GetUserContestReport)
 		quizGroup.GET("get-contest-leaderboard/:category_id", QuizController.GetUserContestLeaderboard)
+		quizGroup.GET("get-user-contest-history/:user_id", QuizController.GetUserPlayedContest)
 
 	}
 

@@ -44,6 +44,7 @@ func main() {
 	models.MigrateUserContestResult(db)
 	models.MigrateContestPointsChart(db)
 	models.MigrateUserContestLeaderboard(db)
+	models.MigrateBanners(db)
 
 	router := gin.Default()
 
@@ -66,6 +67,7 @@ func main() {
 	routes.RegisterUser(router, db)
 	routes.QuizRoutes(router, db)
 	routes.RegisterRoutes(router)
+	routes.SettingsRoutes(router, db)
 
 	router.Run(":8080")
 

@@ -233,6 +233,7 @@ func (qc *QuizController) UserJoinContest(c *gin.Context) {
 	var category models.QuizCategory
 	var wallet models.UserWallet
 	var userJoinInfo models.UserJoinContest
+	var userJoinContestHistory models.UserJoinContestHistory
 	var UserTransactions models.UserTransactions
 
 	// user info
@@ -372,6 +373,35 @@ func (qc *QuizController) UserJoinContest(c *gin.Context) {
 
 	}
 
+	if err := qc.DB.Where("user_id = ? AND  category_id = ?", userId, categoryId).First(&userJoinInfo).Error; err != nil {
+
+		userJoinContestHistory.CategoryID = userJoinInfo.CategoryID
+		userJoinContestHistory.JoinID = userJoinInfo.ID
+		userJoinContestHistory.UserID = userJoinInfo.UserID
+		userJoinContestHistory.JoinedAt = userJoinInfo.JoinedAt
+
+		if err := qc.DB.Save(&userJoinContestHistory).Error; err != nil {
+
+			c.JSON(500, gin.H{
+
+				"status":  "0",
+				"message": "DB error while creating join contest history.",
+			})
+			return
+
+		}
+
+	} else {
+
+		c.JSON(422, gin.H{
+
+			"status":  "0",
+			"message": "Unable to join",
+		})
+		return
+
+	}
+
 	if err := qc.DB.Model(&category).Update("NumOfUsersHaveJoined", category.NumOfUsersHaveJoined).Error; err != nil {
 
 		c.JSON(500, gin.H{
@@ -488,10 +518,12 @@ func (qc *QuizController) GetContestJoinedByUser(c *gin.Context) {
 
 		response = append(response, gin.H{
 
-			"contest_name":   category.Title,
-			"contest_date":   category.QuizTime,
-			"contest_amount": category.TotalPrice,
-			"contest_id":     category.ID,
+			"contest_name":              category.Title,
+			"contest_date":              category.QuizTime,
+			"contest_end_date":          category.QuizEndTime,
+			"contest_question_duration": category.EachQuestionTimeDuration,
+			"contest_amount":            category.TotalPrice,
+			"contest_id":                category.ID,
 		})
 
 	}
@@ -511,10 +543,12 @@ type JoinedContestResponse struct {
 }
 
 type ContestInfo struct {
-	ContestName   string `json:"contest_name" example:"GK"`
-	ContestDate   string `json:"contest_date" example:"2024-12-21T18:00:00+05:30"`
-	ContestAmount int    `json:"contest_amount" example:"10000"`
-	ContestID     int    `json:"contest_id" example:"1"`
+	ContestName             string `json:"contest_name" example:"GK"`
+	ContestDate             string `json:"contest_date" example:"2024-12-21T18:00:00+05:30"`
+	ContestEndDate          string `json:"contest_end_date" example:"2024-12-21T18:00:00+05:40"`
+	ContestQuestionDuration int    `json:"contest_question_duration" example:"15"`
+	ContestAmount           int    `json:"contest_amount" example:"10000"`
+	ContestID               int    `json:"contest_id" example:"1"`
 }
 
 // =============================================== GetRulesByCategory start ========================================================
@@ -894,6 +928,7 @@ func (qc *QuizController) GetUserContestReport(c *gin.Context) {
 
 	var category models.QuizCategory
 	var userJoinContest models.UserJoinContest
+	var userJoinContestHistory models.UserJoinContestHistory
 	var question []models.QuizQuestion
 	var leaderboard models.UserContestLeaderboard
 
@@ -901,7 +936,7 @@ func (qc *QuizController) GetUserContestReport(c *gin.Context) {
 
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 
-			c.JSON(204, gin.H{
+			c.JSON(200, gin.H{
 
 				"status":  "0",
 				"message": "Invalid category id or category not found.",
@@ -920,11 +955,11 @@ func (qc *QuizController) GetUserContestReport(c *gin.Context) {
 
 	}
 
-	if err := qc.DB.Where("category_id = ? AND user_id = ?", categoryId, userId).First(&userJoinContest).Error; err != nil {
+	if err := qc.DB.Where("category_id = ? AND user_id = ?", categoryId, userId).First(&userJoinContestHistory).Error; err != nil {
 
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 
-			c.JSON(204, gin.H{
+			c.JSON(200, gin.H{
 
 				"status":  "0",
 				"message": "User not found in this contest.",
@@ -1001,6 +1036,7 @@ func (qc *QuizController) GetUserContestReport(c *gin.Context) {
 			"user_answer":      userAnswer,
 			"user_answer_type": userAnswerType,
 			"points":           ques_points,
+			"time_taken":       userContestResult.TimeTaken,
 		})
 
 	}
@@ -1046,6 +1082,17 @@ func (qc *QuizController) GetUserContestReport(c *gin.Context) {
 
 	}
 
+	if err := qc.DB.Delete(&userJoinContest, userJoinContest.ID).Error; err != nil {
+
+		c.JSON(500, gin.H{
+
+			"status":  "0",
+			"message": "DB error while deletting join contest data.",
+		})
+		return
+
+	}
+
 	c.JSON(200, gin.H{
 
 		"status":  "1",
@@ -1079,6 +1126,7 @@ type QuizResult struct {
 	UserAnswer     string `json:"user_answer" example:"c"`                     // @Description The answer given by the user
 	UserAnswerType string `json:"user_answer_type" example:"CORRECT"`          // @Description Whether the answer is "CORRECT" or "WRONG"
 	Points         int    `json:"points" example:"80"`                         // @Description Points scored for this particular question
+	TimeTaken      int    `json:"time_taken" example:"1"`                      // @Description Points scored for this particular question
 }
 
 // =============================================== GetUserContestLeaderboard start ========================================================
@@ -1166,4 +1214,124 @@ type LeaderboardEntry struct {
 	PrizeAmount uint   `json:"prize_amount" example:"0"`
 	UserImage   string `json:"user_image" example:"image"`
 	UserName    string `json:"user_name" example:"snagpal"`
+}
+
+// =============================================== GetUserPlayedContest start ========================================================
+
+// GetUserPlayedContest This API will list contest history joined by user
+//
+//	@Summary		This API will list contest history joined by user
+//	@Description	This API will list contest history joined by user
+//	@Schemes
+//	@Tags		Quizes
+//	@Accept		json
+//	@Produce	json
+//	@Param		user_id	path		string	true	"user id"
+//	@Success	200	{object}	GetUserPlayedContestResponse
+//	@Router		/quizes/get-user-contest-history/{user_id} [get]
+func (qc *QuizController) GetUserPlayedContest(c *gin.Context) {
+
+	userId := c.Param("user_id")
+
+	var user models.User
+	var userJoinInfoHistory []models.UserJoinContestHistory
+
+	if err := qc.DB.Where("id = ? AND register = 1", userId).First(&user).Error; err != nil {
+
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+
+			c.JSON(204, gin.H{
+
+				"status":  "0",
+				"message": "Invalid user_id or user not found. " + err.Error(),
+			})
+
+		} else {
+
+			c.JSON(500, gin.H{
+
+				"status":  "0",
+				"message": "DB error while fetching user info. " + err.Error(),
+			})
+
+		}
+		return
+
+	}
+
+	if err := qc.DB.Where("user_id = ?", userId).Find(&userJoinInfoHistory).Error; err != nil {
+
+		c.JSON(500, gin.H{
+
+			"status":  "0",
+			"message": "DB error while fetching user contest join info. " + err.Error(),
+		})
+		return
+
+	}
+
+	if len(userJoinInfoHistory) == 0 {
+
+		c.JSON(200, gin.H{
+
+			"status":  "0",
+			"message": "Contest list found empty.",
+		})
+		return
+
+	}
+
+	var response []gin.H
+	for _, contests := range userJoinInfoHistory {
+
+		var category models.QuizCategory
+		var leaderboard models.UserContestLeaderboard
+
+		err := qc.DB.Where("id = ?", contests.CategoryID).First(&category).Error
+		if err != nil {
+			continue
+		}
+
+		errr := qc.DB.Where("user_id = ? AND category_id = ?", user.ID, contests.CategoryID).First(&leaderboard).Error
+		if errr != nil {
+			continue
+		}
+
+		response = append(response, gin.H{
+
+			"contest_name":              category.Title,
+			"contest_date":              category.QuizTime,
+			"contest_end_date":          category.QuizEndTime,
+			"contest_question_duration": category.EachQuestionTimeDuration,
+			"contest_amount":            category.TotalPrice,
+			"contest_id":                category.ID,
+			"points":                    leaderboard.Points,
+			"prize_amount":              leaderboard.PrizeAmount,
+		})
+
+	}
+
+	c.JSON(200, gin.H{
+		"status":  "1",
+		"message": "Contest list found.",
+		"details": response,
+	})
+
+}
+
+type GetUserPlayedContestResponse struct {
+	Status  string               `json:"status" example:"1"`
+	Message string               `json:"message" example:"Contest list found."`
+	Details []ContestHistoryInfo `json:"details"`
+}
+
+type ContestHistoryInfo struct {
+	ContestName             string `json:"contest_name" example:"GK"`
+	ContestDate             string `json:"contest_date" example:"2024-12-21T18:00:00+05:30"`
+	ContestEndDate          string `json:"contest_end_date" example:"2024-12-21T18:00:00+05:40"`
+	ContestQuestionDuration int    `json:"contest_question_duration" example:"15"`
+	ContestAmount           int    `json:"contest_amount" example:"10000"`
+	ContestID               int    `json:"contest_id" example:"1"`
+	Points                  int    `json:"points" example:"175"`
+	PrizeAmount             int    `json:"prize_amount" example:"175"`
 }
