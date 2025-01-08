@@ -68,6 +68,7 @@ func main() {
 	routes.QuizRoutes(router, db)
 	routes.RegisterRoutes(router)
 	routes.SettingsRoutes(router, db)
+	routes.SetupRoutes(router, db)
 
 	router.Run(":8080")
 

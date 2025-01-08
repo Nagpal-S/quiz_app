@@ -23,16 +23,19 @@ type QuizCategory struct {
 }
 
 type QuizQuestion struct {
-	ID            uint64    `gorm:"primaryKey;autoIncrement" json:"id"`
-	CategoryID    uint64    `gorm:"not null;index" json:"category_id"` // Foreign key
-	Level         string    `gorm:"type:enum('easy','medium','hard');not null" json:"level"`
-	Question      string    `gorm:"type:text;not null" json:"question"`
-	OptionA       string    `gorm:"type:varchar(44);not null" json:"option_a"`
-	OptionB       string    `gorm:"type:varchar(44);not null" json:"option_b"`
-	OptionC       string    `gorm:"type:varchar(44);not null" json:"option_c"`
-	OptionD       string    `gorm:"type:varchar(44);not null" json:"option_d"`
-	CorrectAnswer string    `gorm:"type:enum('a','b','c','d');not null" json:"correct_answer"`
-	CreatedAt     time.Time `gorm:"type:timestamp;default:CURRENT_TIMESTAMP" json:"created_at"`
+	ID             uint64    `gorm:"primaryKey;autoIncrement" json:"id"`
+	CategoryID     uint64    `gorm:"not null;index" json:"category_id"` // Foreign key
+	Level          string    `gorm:"type:enum('easy','medium','hard');not null" json:"level"`
+	Question       string    `gorm:"type:text;not null" json:"question"`
+	OptionA        string    `gorm:"type:varchar(44);not null" json:"option_a"`
+	OptionB        string    `gorm:"type:varchar(44);not null" json:"option_b"`
+	OptionC        string    `gorm:"type:varchar(44);not null" json:"option_c"`
+	OptionD        string    `gorm:"type:varchar(44);not null" json:"option_d"`
+	CorrectAnswer  string    `gorm:"type:enum('a','b','c','d');not null" json:"correct_answer"`
+	QuestionNumber uint      `gorm:"not null;index" json:"question_number"`
+	From           time.Time `json:"from" gorm:"type:timestamp;default:NULL"`
+	To             time.Time `json:"to" gorm:"type:timestamp;default:NULL"`
+	CreatedAt      time.Time `gorm:"type:timestamp;default:CURRENT_TIMESTAMP" json:"created_at"`
 }
 
 type ContestRules struct {

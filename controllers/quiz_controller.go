@@ -241,7 +241,7 @@ func (qc *QuizController) UserJoinContest(c *gin.Context) {
 
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 
-			c.JSON(204, gin.H{
+			c.JSON(200, gin.H{
 
 				"status":  "0",
 				"message": "Invalid user_id or user not found. " + err.Error(),
@@ -265,7 +265,7 @@ func (qc *QuizController) UserJoinContest(c *gin.Context) {
 
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 
-			c.JSON(204, gin.H{
+			c.JSON(200, gin.H{
 
 				"status":  "0",
 				"message": "Invalid category_id or category not found. " + err.Error(),
@@ -290,7 +290,7 @@ func (qc *QuizController) UserJoinContest(c *gin.Context) {
 
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 
-			c.JSON(204, gin.H{
+			c.JSON(200, gin.H{
 
 				"status":  "0",
 				"message": "User wallet not found. " + err.Error(),
@@ -375,28 +375,33 @@ func (qc *QuizController) UserJoinContest(c *gin.Context) {
 
 	if err := qc.DB.Where("user_id = ? AND  category_id = ?", userId, categoryId).First(&userJoinInfo).Error; err != nil {
 
-		userJoinContestHistory.CategoryID = userJoinInfo.CategoryID
-		userJoinContestHistory.JoinID = userJoinInfo.ID
-		userJoinContestHistory.UserID = userJoinInfo.UserID
-		userJoinContestHistory.JoinedAt = userJoinInfo.JoinedAt
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			c.JSON(200, gin.H{
 
-		if err := qc.DB.Save(&userJoinContestHistory).Error; err != nil {
-
+				"status":  "0",
+				"message": "Error joining Quiz.",
+			})
+		} else {
 			c.JSON(500, gin.H{
 
 				"status":  "0",
-				"message": "DB error while creating join contest history.",
+				"message": "DB error",
 			})
-			return
-
 		}
 
-	} else {
+	}
 
-		c.JSON(422, gin.H{
+	userJoinContestHistory.CategoryID = userJoinInfo.CategoryID
+	userJoinContestHistory.JoinID = userJoinInfo.ID
+	userJoinContestHistory.UserID = userJoinInfo.UserID
+	userJoinContestHistory.JoinedAt = userJoinInfo.JoinedAt
+
+	if err := qc.DB.Create(&userJoinContestHistory).Error; err != nil {
+
+		c.JSON(500, gin.H{
 
 			"status":  "0",
-			"message": "Unable to join",
+			"message": "DB error while creating join contest history.",
 		})
 		return
 
