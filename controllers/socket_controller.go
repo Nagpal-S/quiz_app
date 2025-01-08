@@ -20,74 +20,61 @@ var upgrader = websocket.Upgrader{
 	ReadBufferSize:  1024,
 	WriteBufferSize: 1024,
 	CheckOrigin: func(r *http.Request) bool {
-		// Allow connections from any origin
-		return true
+		return true // Allow connections from any origin
 	},
 }
 
-// HandleWebSocket sends JSON data to a WebSocket client (mobile app)
+// HandleWebSocket sends JSON data to a WebSocket client
 func (sc *SocketController) HandleWebSocket(c *gin.Context) {
-
 	var categories []models.QuizCategory
 
 	// Upgrade HTTP connection to WebSocket
 	conn, err := upgrader.Upgrade(c.Writer, c.Request, nil)
 	if err != nil {
-		// Respond with error if WebSocket upgrade fails
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "Failed to upgrade to WebSocket",
-		})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Failed to upgrade to WebSocket"})
 		return
 	}
 	defer conn.Close()
 
-	var response []gin.H
+	// Predefined intervals
+	predefinedIntervals := []int{1, 16, 31, 46}
 
-	// Continuously send structured JSON data to the client
-	for {
+	// Helper function to get the nearest previous interval
+	getPreviousInterval := func(current time.Time) time.Time {
+		currentMinute := current.Truncate(time.Minute)
+		currentSecond := current.Second()
 
-		if err := sc.DB.Where("quiz_time <= ? AND quiz_end_time >= ?", time.Now(), time.Now()).Find(&categories).Error; err != nil {
-
-			errorData := gin.H{
-				"status":  "0",
-				"message": "DB error while fetching categories data",
-				"details": err.Error(),
+		// Loop in reverse to find the most recent valid interval
+		for i := len(predefinedIntervals) - 1; i >= 0; i-- {
+			if currentSecond >= predefinedIntervals[i] {
+				return currentMinute.Add(time.Duration(predefinedIntervals[i]) * time.Second)
 			}
-			conn.WriteJSON(errorData)
-			break
+		}
 
+		// If no valid interval in the current minute, move to the last interval of the previous minute
+		previousMinute := currentMinute.Add(-time.Minute)
+		return previousMinute.Add(time.Duration(predefinedIntervals[len(predefinedIntervals)-1]) * time.Second)
+	}
+
+	// Helper function to fetch and send quiz data for a specific interval
+	sendQuizData := func(targetTime time.Time) {
+		if err := sc.DB.Where("quiz_time <= ? AND quiz_end_time >= ?", targetTime, targetTime).Find(&categories).Error; err != nil {
+			conn.WriteJSON(gin.H{"status": "0", "message": "DB error while fetching categories data", "details": err.Error()})
+			return
 		}
 
 		var data gin.H
-
 		if len(categories) == 0 {
-
-			data = gin.H{
-				"status":  "0",
-				"message": "No Active quiz found.",
-				"details": response,
-			}
-
+			data = gin.H{"status": "0", "message": "No Active quiz found.", "details": []gin.H{}}
 		} else {
-
-			data = gin.H{
-				"status":  "1",
-				"message": "Quiz list",
-				"details": gin.H{},
-			}
-
+			data = gin.H{"status": "1", "message": "Quiz list", "details": gin.H{}}
 			for _, value := range categories {
-
 				var questions models.QuizQuestion
-
-				if err := sc.DB.Where("`category_id` = ? AND `from` <= ? AND `to` >= ?", value.ID, time.Now(), time.Now()).First(&questions).Error; err != nil {
-
+				if err := sc.DB.Where("`category_id` = ? AND `from` <= ? AND `to` >= ?", value.ID, targetTime, targetTime).First(&questions).Error; err != nil {
 					continue
-
 				}
 
 				questionsData := gin.H{
-
 					"question_id":         questions.ID,
 					"total_question":      value.NumOfQuestions,
 					"question_number":     questions.QuestionNumber,
@@ -103,23 +90,39 @@ func (sc *SocketController) HandleWebSocket(c *gin.Context) {
 				}
 
 				data["details"].(gin.H)[fmt.Sprintf("%d", value.ID)] = questionsData
-
 			}
-
 		}
 
-		err := conn.WriteJSON(data)
-		if err != nil {
-			// Handle error during WebSocket communication
-			errorData := gin.H{
-				"status":  "0",
-				"message": "Failed to send data",
-				"details": err.Error(),
-			}
-			conn.WriteJSON(errorData)
+		// Send data to the client
+		if err := conn.WriteJSON(data); err != nil {
+			conn.WriteJSON(gin.H{"status": "0", "message": "Failed to send data", "details": err.Error()})
+		}
+	}
+
+	// Fetch and send data for the previous interval immediately
+	previousInterval := getPreviousInterval(time.Now())
+	sendQuizData(previousInterval)
+
+	// Sleep until the next predefined interval
+	currentTime := time.Now()
+	var nextStartTime time.Time
+	for _, interval := range predefinedIntervals {
+		potentialStart := currentTime.Truncate(time.Minute).Add(time.Duration(interval) * time.Second)
+		if currentTime.Before(potentialStart) {
+			nextStartTime = potentialStart
 			break
 		}
-		// Wait for 3 seconds before sending the next update
+	}
+	if nextStartTime.IsZero() {
+		nextStartTime = currentTime.Truncate(time.Minute).Add(time.Minute).Add(time.Duration(predefinedIntervals[0]) * time.Second)
+	}
+	time.Sleep(time.Until(nextStartTime))
+
+	// Continuously send structured JSON data to the client at each interval
+	for {
+		sendQuizData(time.Now())
+
+		// Wait for the next interval (15 seconds gap in your current logic)
 		time.Sleep(15 * time.Second)
 	}
 }
