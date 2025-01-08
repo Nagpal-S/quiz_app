@@ -25,7 +25,7 @@ type QuizController struct {
 //	@Accept		json
 //	@Produce	json
 //	@Param			user_id	path	string	true	"User ID"
-//	@Success	200	{object}	categoryInfo
+//	@Success	200	{object}	CategoryInfo
 //	@Router		/quizes/get-categories/{user_id} [get]
 func (qc *QuizController) GetQuizCategories(c *gin.Context) {
 	userID := c.Param("user_id")
@@ -82,7 +82,7 @@ func (qc *QuizController) GetQuizCategories(c *gin.Context) {
 	})
 }
 
-type categoryInfo struct {
+type CategoryInfo struct {
 	Details []struct {
 		ID                   int    `json:"id" example:"1"`
 		Active               string `json:"active" example:"1"`
