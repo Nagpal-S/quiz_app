@@ -1,9 +1,12 @@
 package main
 
 import (
+	"fmt"
 	"log"
+	"net/http"
 	"quizapp/models"
 	"quizapp/routes"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/driver/mysql"
@@ -70,6 +73,35 @@ func main() {
 	routes.SettingsRoutes(router, db)
 	routes.SetupRoutes(router, db)
 
+	go startCronJob()
+
 	router.Run(":8080")
 
+}
+
+func startCronJob() {
+	for {
+		hitLocalAPI()               // Call the API function 🌟
+		time.Sleep(5 * time.Second) // Wait for 5 seconds 🕔
+	}
+}
+
+func hitLocalAPI() {
+	// API URL to hit (local server) 🛠️
+	url := "http://localhost:8080/quizes/create-leaderboard/"
+
+	// Send POST request 🌍
+	resp, err := http.Post(url, "application/json", nil)
+	if err != nil {
+		fmt.Printf("❌ Error hitting the API: %v\n", err)
+		return
+	}
+	defer resp.Body.Close()
+
+	// Check the API response ✅
+	if resp.StatusCode == http.StatusOK {
+		fmt.Println("✅ Leaderboard API hit successfully!")
+	} else {
+		fmt.Printf("❌ Failed to hit API with status: %s\n", resp.Status)
+	}
 }

@@ -935,7 +935,7 @@ func (qc *QuizController) GetUserContestReport(c *gin.Context) {
 	var userJoinContest models.UserJoinContest
 	var userJoinContestHistory models.UserJoinContestHistory
 	var question []models.QuizQuestion
-	var leaderboard models.UserContestLeaderboard
+	// var leaderboard models.UserContestLeaderboard
 
 	if err := qc.DB.Where("id = ?", categoryId).First(&category).Error; err != nil {
 
@@ -961,6 +961,29 @@ func (qc *QuizController) GetUserContestReport(c *gin.Context) {
 	}
 
 	if err := qc.DB.Where("category_id = ? AND user_id = ?", categoryId, userId).First(&userJoinContestHistory).Error; err != nil {
+
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+
+			c.JSON(200, gin.H{
+
+				"status":  "0",
+				"message": "User not found in this contest.",
+			})
+
+		} else {
+
+			c.JSON(500, gin.H{
+
+				"status":  "0",
+				"message": "DB error while fetching user join data.",
+			})
+
+		}
+		return
+
+	}
+
+	if err := qc.DB.Where("category_id = ? AND user_id = ?", categoryId, userId).First(&userJoinContest).Error; err != nil {
 
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 
@@ -1046,57 +1069,57 @@ func (qc *QuizController) GetUserContestReport(c *gin.Context) {
 
 	}
 
-	if err := qc.DB.Where("category_id = ? AND user_id = ?", categoryId, userId).First(&leaderboard).Error; err != nil {
+	// if err := qc.DB.Where("category_id = ? AND user_id = ?", categoryId, userId).First(&leaderboard).Error; err != nil {
 
-		if errors.Is(err, gorm.ErrRecordNotFound) {
+	// 	if errors.Is(err, gorm.ErrRecordNotFound) {
 
-			leaderboard.CategoryID = category.ID
-			userIdUint, err := strconv.ParseUint(userId, 10, 32)
-			if err != nil {
+	// 		// leaderboard.CategoryID = category.ID
+	// 		// userIdUint, err := strconv.ParseUint(userId, 10, 32)
+	// 		// if err != nil {
 
-				c.JSON(500, gin.H{
+	// 		// 	c.JSON(500, gin.H{
 
-					"status":  "0",
-					"message": "Unexpected error",
-				})
+	// 		// 		"status":  "0",
+	// 		// 		"message": "Unexpected error",
+	// 		// 	})
 
-				return
-			}
-			leaderboard.UserID = uint(userIdUint)
-			leaderboard.Points = points
-			leaderboard.PrizeAmount = 0
+	// 		// 	return
+	// 		// }
+	// 		// leaderboard.UserID = uint(userIdUint)
+	// 		// leaderboard.Points = points
+	// 		// leaderboard.PrizeAmount = 0
 
-			if createErr := qc.DB.Create(&leaderboard).Error; createErr != nil {
-				c.JSON(500, gin.H{
-					"status":  "0",
-					"message": "DB error while creating leaderboard",
-				})
-				return
-			}
+	// 		// if createErr := qc.DB.Create(&leaderboard).Error; createErr != nil {
+	// 		// 	c.JSON(500, gin.H{
+	// 		// 		"status":  "0",
+	// 		// 		"message": "DB error while creating leaderboard",
+	// 		// 	})
+	// 		// 	return
+	// 		// }
 
-		} else {
+	// 	} else {
 
-			c.JSON(500, gin.H{
+	// 		c.JSON(500, gin.H{
 
-				"status":  "0",
-				"message": "DB error while creating leadeboard",
-			})
-			return
+	// 			"status":  "0",
+	// 			"message": "DB error while creating leadeboard",
+	// 		})
+	// 		return
 
-		}
+	// 	}
 
-	}
+	// }
 
-	if err := qc.DB.Delete(&userJoinContest, userJoinContest.ID).Error; err != nil {
+	// if err := qc.DB.Delete(&userJoinContest, userJoinContest.ID).Error; err != nil {
 
-		c.JSON(500, gin.H{
+	// 	c.JSON(500, gin.H{
 
-			"status":  "0",
-			"message": "DB error while deletting join contest data.",
-		})
-		return
+	// 		"status":  "0",
+	// 		"message": "DB error while deletting join contest data.",
+	// 	})
+	// 	return
 
-	}
+	// }
 
 	c.JSON(200, gin.H{
 
@@ -1339,4 +1362,87 @@ type ContestHistoryInfo struct {
 	ContestID               int    `json:"contest_id" example:"1"`
 	Points                  int    `json:"points" example:"175"`
 	PrizeAmount             int    `json:"prize_amount" example:"175"`
+}
+
+// =============================================== CreateLeaderboard cronjob start ========================================================
+
+func (qc *QuizController) CreateLeaderboard(c *gin.Context) {
+
+	var categories []models.QuizCategory
+
+	if err := qc.DB.Where("quiz_end_time < ? AND leader_board_created = 0", time.Now()).Find(&categories).Error; err != nil {
+
+		println("DB error while getting quiz list.")
+		return
+
+	}
+
+	categoriesLength := len(categories)
+	currentCategoryLength := 0
+
+	if categoriesLength > 0 {
+
+		for _, cat := range categories {
+
+			currentCategoryLength++
+
+			var userJoinContest []models.UserJoinContest
+
+			if err := qc.DB.Where("category_id = ?", cat.ID).Find(&userJoinContest).Error; err != nil {
+
+				println("DB error while getting quiz list.")
+
+			}
+
+			if len(userJoinContest) > 0 {
+
+				for _, ujc := range userJoinContest {
+
+					var leaderboard models.UserContestLeaderboard
+
+					totalPoints := 0
+
+					// Query the database to calculate the sum of points
+					if err := qc.DB.Table("user_contest_results").Where("category_id = ? AND user_id = ?", ujc.CategoryID, ujc.UserID).Select("SUM(points)").Scan(&totalPoints).Error; err != nil {
+
+						println("DB error while getting quiz list.")
+
+					}
+
+					leaderboard.CategoryID = ujc.CategoryID
+					leaderboard.Points = uint(totalPoints)
+					leaderboard.PrizeAmount = 0
+					leaderboard.UserID = ujc.UserID
+
+					if createErr := qc.DB.Create(&leaderboard).Error; createErr != nil {
+
+						println("DB error while creating leaderboard.")
+
+					}
+
+					if err := qc.DB.Delete(&userJoinContest, ujc.ID).Error; err != nil {
+
+						println("DB error while deleting user join contest.")
+
+					}
+
+				}
+
+			}
+
+			if currentCategoryLength == categoriesLength {
+
+				cat.LeaderBoardCreated = "1"
+
+				if err := qc.DB.Model(&cat).Select("leader_board_created").Save(&cat).Error; err != nil {
+
+					println("DB error while updating category info.")
+
+				}
+			}
+
+		}
+
+	}
+
 }
