@@ -20,6 +20,8 @@ type QuizCategory struct {
 	QuizEndTime              time.Time `json:"quiz_end_time" gorm:"type:datetime"`
 	JoinAmount               int       `json:"join_amount" gorm:"type:int(11)"`
 	LeaderBoardCreated       string    `json:"leader_board_created" gorm:"type:varchar(1);default:'0'"`
+	StopEntries              string    `gorm:"type:enum('0','1');not null" json:"stop_entries"`
+	StopEntriesTime          time.Time `json:"stop_entries_time" gorm:"type:timestamp;default:NULL"`
 	Created                  time.Time `json:"crated" gorm:"type:timestamp;default:CURRENT_TIMESTAMP"`
 }
 

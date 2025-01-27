@@ -74,6 +74,7 @@ func main() {
 	routes.SetupRoutes(router, db)
 
 	go startCronJob()
+	go closeEntries()
 
 	router.Run(":8080")
 
@@ -86,9 +87,36 @@ func startCronJob() {
 	}
 }
 
+func closeEntries() {
+	for {
+		closeEntriesAPI()           // Call the API function 🌟
+		time.Sleep(2 * time.Minute) // Wait for 5 seconds 🕔
+	}
+}
+
 func hitLocalAPI() {
 	// API URL to hit (local server) 🛠️
 	url := "http://localhost:8080/quizes/create-leaderboard/"
+
+	// Send POST request 🌍
+	resp, err := http.Post(url, "application/json", nil)
+	if err != nil {
+		fmt.Printf("❌ Error hitting the API: %v\n", err)
+		return
+	}
+	defer resp.Body.Close()
+
+	// Check the API response ✅
+	if resp.StatusCode == http.StatusOK {
+		fmt.Println("✅ Leaderboard API hit successfully!")
+	} else {
+		fmt.Printf("❌ Failed to hit API with status: %s\n", resp.Status)
+	}
+}
+
+func closeEntriesAPI() {
+	// API URL to hit (local server) 🛠️
+	url := "http://localhost:8080/quizes/close-entry/"
 
 	// Send POST request 🌍
 	resp, err := http.Post(url, "application/json", nil)

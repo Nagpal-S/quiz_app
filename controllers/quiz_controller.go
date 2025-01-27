@@ -1446,3 +1446,31 @@ func (qc *QuizController) CreateLeaderboard(c *gin.Context) {
 	}
 
 }
+
+func (qc *QuizController) CloseEntries(c *gin.Context) {
+
+	var quizCategories []models.QuizCategory
+
+	if err := qc.DB.Where("stop_entries_time < ? AND stop_entries = '0'", time.Now()).Find(&quizCategories).Error; err != nil {
+
+		println("DB error while fetching category info.")
+		return
+	}
+
+	if len(quizCategories) > 0 {
+
+		for _, categories := range quizCategories {
+
+			categories.StopEntries = "1"
+
+			if err := qc.DB.Model(&categories).Update("StopEntries", categories.StopEntries).Error; err != nil {
+
+				println("DB error while fetching category info.")
+
+			}
+
+		}
+
+	}
+
+}
