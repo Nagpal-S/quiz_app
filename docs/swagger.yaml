@@ -26,6 +26,53 @@ definitions:
         example: "2024-12-31T17:00:00+05:30"
         type: string
     type: object
+  controllers.CategoryInfo:
+    properties:
+      details:
+        items:
+          properties:
+            active:
+              example: "1"
+              type: string
+            created:
+              example: "2024-12-17T18:07:19+05:30"
+              type: string
+            icon:
+              example: https://quizbuck.s3.ap-south-1.amazonaws.com/uploads/1734090491_new.jpg
+              type: string
+            id:
+              example: 1
+              type: integer
+            join_amount:
+              example: 100
+              type: integer
+            num_of_users_can_join:
+              example: 20
+              type: integer
+            num_of_users_have_joined:
+              example: 0
+              type: integer
+            quiz_time:
+              example: "2024-12-17T18:00:00+05:30"
+              type: string
+            title:
+              example: GK
+              type: string
+            total_price:
+              example: 100000
+              type: integer
+            user_has_joined:
+              example: true
+              type: boolean
+          type: object
+        type: array
+      message:
+        example: Category list data found.
+        type: string
+      status:
+        example: "1"
+        type: string
+    type: object
   controllers.ContestHistoryInfo:
     properties:
       contest_amount:
@@ -170,6 +217,9 @@ definitions:
         example: 175
         type: integer
       prize_amount:
+        example: 0
+        type: integer
+      time_taken:
         example: 0
         type: integer
       user_image:
@@ -399,53 +449,6 @@ definitions:
       wallet:
         type: number
     type: object
-  controllers.categoryInfo:
-    properties:
-      details:
-        items:
-          properties:
-            active:
-              example: "1"
-              type: string
-            created:
-              example: "2024-12-17T18:07:19+05:30"
-              type: string
-            icon:
-              example: https://quizbuck.s3.ap-south-1.amazonaws.com/uploads/1734090491_new.jpg
-              type: string
-            id:
-              example: 1
-              type: integer
-            join_amount:
-              example: 100
-              type: integer
-            num_of_users_can_join:
-              example: 20
-              type: integer
-            num_of_users_have_joined:
-              example: 0
-              type: integer
-            quiz_time:
-              example: "2024-12-17T18:00:00+05:30"
-              type: string
-            title:
-              example: GK
-              type: string
-            total_price:
-              example: 100000
-              type: integer
-            user_has_joined:
-              example: true
-              type: boolean
-          type: object
-        type: array
-      message:
-        example: Category list data found.
-        type: string
-      status:
-        example: "1"
-        type: string
-    type: object
   controllers.editProfileResponse:
     properties:
       message:
@@ -570,7 +573,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/controllers.categoryInfo'
+            $ref: '#/definitions/controllers.CategoryInfo'
       summary: This API will provide list of quiz categories
       tags:
       - Quizes
@@ -884,7 +887,6 @@ paths:
       - description: User Image
         in: formData
         name: image
-        required: true
         type: string
       - description: User Gender (Male, Female, Others)
         in: formData

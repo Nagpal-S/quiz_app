@@ -42,7 +42,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/controllers.categoryInfo"
+                            "$ref": "#/definitions/controllers.CategoryInfo"
                         }
                     }
                 }
@@ -518,8 +518,7 @@ const docTemplate = `{
                         "type": "string",
                         "description": "User Image",
                         "name": "image",
-                        "in": "formData",
-                        "required": true
+                        "in": "formData"
                     },
                     {
                         "type": "string",
@@ -722,6 +721,71 @@ const docTemplate = `{
                     "description": "Timestamp of banner creation",
                     "type": "string",
                     "example": "2024-12-31T17:00:00+05:30"
+                }
+            }
+        },
+        "controllers.CategoryInfo": {
+            "type": "object",
+            "properties": {
+                "details": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "active": {
+                                "type": "string",
+                                "example": "1"
+                            },
+                            "created": {
+                                "type": "string",
+                                "example": "2024-12-17T18:07:19+05:30"
+                            },
+                            "icon": {
+                                "type": "string",
+                                "example": "https://quizbuck.s3.ap-south-1.amazonaws.com/uploads/1734090491_new.jpg"
+                            },
+                            "id": {
+                                "type": "integer",
+                                "example": 1
+                            },
+                            "join_amount": {
+                                "type": "integer",
+                                "example": 100
+                            },
+                            "num_of_users_can_join": {
+                                "type": "integer",
+                                "example": 20
+                            },
+                            "num_of_users_have_joined": {
+                                "type": "integer",
+                                "example": 0
+                            },
+                            "quiz_time": {
+                                "type": "string",
+                                "example": "2024-12-17T18:00:00+05:30"
+                            },
+                            "title": {
+                                "type": "string",
+                                "example": "GK"
+                            },
+                            "total_price": {
+                                "type": "integer",
+                                "example": 100000
+                            },
+                            "user_has_joined": {
+                                "type": "boolean",
+                                "example": true
+                            }
+                        }
+                    }
+                },
+                "message": {
+                    "type": "string",
+                    "example": "Category list data found."
+                },
+                "status": {
+                    "type": "string",
+                    "example": "1"
                 }
             }
         },
@@ -930,6 +994,10 @@ const docTemplate = `{
                     "example": 175
                 },
                 "prize_amount": {
+                    "type": "integer",
+                    "example": 0
+                },
+                "time_taken": {
                     "type": "integer",
                     "example": 0
                 },
@@ -1246,71 +1314,6 @@ const docTemplate = `{
                 },
                 "wallet": {
                     "type": "number"
-                }
-            }
-        },
-        "controllers.categoryInfo": {
-            "type": "object",
-            "properties": {
-                "details": {
-                    "type": "array",
-                    "items": {
-                        "type": "object",
-                        "properties": {
-                            "active": {
-                                "type": "string",
-                                "example": "1"
-                            },
-                            "created": {
-                                "type": "string",
-                                "example": "2024-12-17T18:07:19+05:30"
-                            },
-                            "icon": {
-                                "type": "string",
-                                "example": "https://quizbuck.s3.ap-south-1.amazonaws.com/uploads/1734090491_new.jpg"
-                            },
-                            "id": {
-                                "type": "integer",
-                                "example": 1
-                            },
-                            "join_amount": {
-                                "type": "integer",
-                                "example": 100
-                            },
-                            "num_of_users_can_join": {
-                                "type": "integer",
-                                "example": 20
-                            },
-                            "num_of_users_have_joined": {
-                                "type": "integer",
-                                "example": 0
-                            },
-                            "quiz_time": {
-                                "type": "string",
-                                "example": "2024-12-17T18:00:00+05:30"
-                            },
-                            "title": {
-                                "type": "string",
-                                "example": "GK"
-                            },
-                            "total_price": {
-                                "type": "integer",
-                                "example": 100000
-                            },
-                            "user_has_joined": {
-                                "type": "boolean",
-                                "example": true
-                            }
-                        }
-                    }
-                },
-                "message": {
-                    "type": "string",
-                    "example": "Category list data found."
-                },
-                "status": {
-                    "type": "string",
-                    "example": "1"
                 }
             }
         },

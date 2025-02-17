@@ -97,11 +97,12 @@ type ContestPointsChart struct {
 }
 
 type UserContestLeaderboard struct {
-	ID          uint64 `gorm:"primaryKey;autoIncrement" json:"id"`
-	CategoryID  uint64 `gorm:"not null;index" json:"category_id"` // Foreign key
-	UserID      uint   `gorm:"not null;index" json:"user_id"`     // Foreign key
-	Points      uint   `gorm:"not null;index" json:"points"`
-	PrizeAmount uint   `gorm:"not null;index" json:"prize_amount"`
+	ID             uint64 `gorm:"primaryKey;autoIncrement" json:"id"`
+	CategoryID     uint64 `gorm:"not null;index" json:"category_id"` // Foreign key
+	UserID         uint   `gorm:"not null;index" json:"user_id"`     // Foreign key
+	Points         uint   `gorm:"not null;index" json:"points"`
+	TotalTimeTaken uint   `gorm:"not null;index" json:"total_time_taken"`
+	PrizeAmount    uint   `gorm:"not null;index" json:"prize_amount"`
 }
 
 // MigrateUser migrates the User table

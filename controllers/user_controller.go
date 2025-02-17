@@ -270,7 +270,7 @@ type userInfo struct {
 //	@Param		name	formData	string	true	"User Name"
 //	@Param		email	formData	string	true	"User Email"
 //	@Param		phone	formData	string	true	"User Phone"
-//	@Param		image	formData	string	true	"User Image"
+//	@Param		image	formData	string	false	"User Image"
 //	@Param		gender	formData	string	false	"User Gender (Male, Female, Others)"
 //	@Success	200		{object}	editProfileResponse
 //	@Router		/users/edit-user-profile [post]
@@ -286,9 +286,15 @@ func (uc *UserController) EditUserProfile(c *gin.Context) {
 	gender := c.PostForm("gender")
 
 	// Validate mandatory fields
-	if id == "" || name == "" || email == "" || phone == "" || gender == "" || image == "" {
+	if id == "" || name == "" || email == "" || phone == "" || gender == "" {
 		c.JSON(400, gin.H{"status": "0", "message": "Bad Request. Missing required parameters."})
 		return
+	}
+
+	if image == "" {
+
+		image = ""
+
 	}
 
 	// Fetch the user from the database

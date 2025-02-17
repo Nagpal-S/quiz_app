@@ -932,7 +932,7 @@ func (qc *QuizController) GetUserContestReport(c *gin.Context) {
 	categoryId := c.Param("category_id")
 
 	var category models.QuizCategory
-	var userJoinContest models.UserJoinContest
+	// var userJoinContest models.UserJoinContest
 	var userJoinContestHistory models.UserJoinContestHistory
 	var question []models.QuizQuestion
 	// var leaderboard models.UserContestLeaderboard
@@ -983,28 +983,28 @@ func (qc *QuizController) GetUserContestReport(c *gin.Context) {
 
 	}
 
-	if err := qc.DB.Where("category_id = ? AND user_id = ?", categoryId, userId).First(&userJoinContest).Error; err != nil {
+	// if err := qc.DB.Where("category_id = ? AND user_id = ?", categoryId, userId).First(&userJoinContest).Error; err != nil {
 
-		if errors.Is(err, gorm.ErrRecordNotFound) {
+	// 	if errors.Is(err, gorm.ErrRecordNotFound) {
 
-			c.JSON(200, gin.H{
+	// 		c.JSON(200, gin.H{
 
-				"status":  "0",
-				"message": "User not found in this contest.",
-			})
+	// 			"status":  "0",
+	// 			"message": "User not found in this contest.",
+	// 		})
 
-		} else {
+	// 	} else {
 
-			c.JSON(500, gin.H{
+	// 		c.JSON(500, gin.H{
 
-				"status":  "0",
-				"message": "DB error while fetching user join data.",
-			})
+	// 			"status":  "0",
+	// 			"message": "DB error while fetching user join data.",
+	// 		})
 
-		}
-		return
+	// 	}
+	// 	return
 
-	}
+	// }
 
 	if err := qc.DB.Where("category_id = ?", categoryId).Find(&question).Error; err != nil {
 
@@ -1217,6 +1217,7 @@ func (qc *QuizController) GetUserContestLeaderboard(c *gin.Context) {
 			"user_image":   user.Image,
 			"points":       data.Points,
 			"prize_amount": data.PrizeAmount,
+			"time_taken":   data.TotalTimeTaken,
 		})
 
 	}
@@ -1240,6 +1241,7 @@ type GetUserContestLeaderboardResponse struct {
 type LeaderboardEntry struct {
 	Points      uint   `json:"points" example:"175"`
 	PrizeAmount uint   `json:"prize_amount" example:"0"`
+	TimeTaken   uint   `json:"time_taken" example:"20"`
 	UserImage   string `json:"user_image" example:"image"`
 	UserName    string `json:"user_name" example:"snagpal"`
 }
@@ -1409,8 +1411,17 @@ func (qc *QuizController) CreateLeaderboard(c *gin.Context) {
 
 					}
 
+					totalTime := 0
+
+					if err := qc.DB.Table("user_join_contest_result").Where("category_id = ? AND user_id = ?", ujc.CategoryID, ujc.UserID).Select("SUM(time_taken)").Scan(&totalTime).Error; err != nil {
+
+						println("DB error while getting total time.")
+
+					}
+
 					leaderboard.CategoryID = ujc.CategoryID
 					leaderboard.Points = uint(totalPoints)
+					leaderboard.TotalTimeTaken = uint(totalTime)
 					leaderboard.PrizeAmount = 0
 					leaderboard.UserID = ujc.UserID
 
