@@ -1213,6 +1213,7 @@ func (qc *QuizController) GetUserContestLeaderboard(c *gin.Context) {
 
 		response = append(response, gin.H{
 
+			"user_id":      user.ID,
 			"user_name":    user.Name,
 			"user_image":   user.Image,
 			"points":       data.Points,
@@ -1244,6 +1245,7 @@ type LeaderboardEntry struct {
 	TimeTaken   uint   `json:"time_taken" example:"20"`
 	UserImage   string `json:"user_image" example:"image"`
 	UserName    string `json:"user_name" example:"snagpal"`
+	UserId      string `json:"user_id" example:"1"`
 }
 
 // =============================================== GetUserPlayedContest start ========================================================
@@ -1366,6 +1368,437 @@ type ContestHistoryInfo struct {
 	PrizeAmount             int    `json:"prize_amount" example:"175"`
 }
 
+// =============================================== GetLeaderBoardByUserId start ========================================================
+
+// func (qc *QuizController) GetLeaderBoardByUserId(c *gin.Context) {
+
+// 	user_id := c.Param("user_id")
+// 	category_id := c.Param("category_id")
+
+// 	var user models.User
+// 	var contestHistoryInfo models.UserJoinContestHistory
+// 	var contestQuestions []models.QuizQuestion
+// 	// var contestResult models.
+
+// 	//check user exist or not
+// 	if err := qc.DB.Where("register = '1' AND id = ?", user_id).First(&user).Error; err != nil {
+
+// 		if errors.Is(err, gorm.ErrRecordNotFound) {
+
+// 			c.JSON(200, gin.H{
+
+// 				"status":  "0",
+// 				"message": "Invalid userid or user not found, " + err.Error(),
+// 			})
+// 			return
+
+// 		} else {
+
+// 			c.JSON(500, gin.H{
+
+// 				"status":  "0",
+// 				"message": "DB error while fetching user info, " + err.Error(),
+// 			})
+// 			return
+
+// 		}
+
+// 	}
+
+// 	// check user joined quiz or not
+// 	if err := qc.DB.Where("category_id = ? AND user_id = ?", category_id, user_id).First(&contestHistoryInfo).Error; err != nil {
+
+// 		if errors.Is(err, gorm.ErrRecordNotFound) {
+
+// 			c.JSON(200, gin.H{
+
+// 				"status":  "0",
+// 				"message": "No user found with this contest, " + err.Error(),
+// 			})
+// 			return
+
+// 		} else {
+
+// 			c.JSON(500, gin.H{
+
+// 				"status":  "0",
+// 				"message": "DB error while fetching user join history, " + err.Error(),
+// 			})
+// 			return
+
+// 		}
+
+// 	}
+
+// 	// check if questions exist or not
+// 	if err := qc.DB.Where("category_id = ?", category_id).Find(&contestQuestions).Error; err != nil {
+
+// 		c.JSON(500, gin.H{
+
+// 			"status":  "0",
+// 			"message": "DB error while fetching quiz questions, " + err.Error(),
+// 		})
+// 		return
+// 	}
+
+// 	if len(contestQuestions) == 0 {
+
+// 		c.JSON(500, gin.H{
+
+// 			"status":  "0",
+// 			"message": "Some error occured no quiz questions found.",
+// 		})
+// 		return
+
+// 	}
+
+// 	var response []gin.H
+// 	var points uint
+// 	for _, question := range contestQuestions {
+
+// 		var userAnswer string
+// 		var userAnswerType string
+// 		var ques_points uint
+
+// 		var contestResult models.UserContestResults
+
+// 		if err := qc.DB.Where("category_id = ? AND question_id = ? AND user_id = ?", category_id, question.ID, user_id).First(&contestResult).Error; err != nil {
+
+// 			points += 0
+// 			userAnswer = "N/A"
+// 			userAnswerType = "NA"
+// 			ques_points = 0
+
+// 		} else {
+
+// 			points += contestResult.Points
+// 			userAnswer = contestResult.AnswerGiven
+// 			userAnswerType = contestResult.AnswerType
+// 			ques_points = contestResult.Points
+
+// 		}
+
+// 		response = append(response, gin.H{
+
+// 			"question":         question.Question,
+// 			"answer_a":         question.OptionA,
+// 			"answer_b":         question.OptionB,
+// 			"answer_c":         question.OptionC,
+// 			"answer_d":         question.OptionD,
+// 			"correct_answer":   question.CorrectAnswer,
+// 			"user_answer":      userAnswer,
+// 			"user_answer_type": userAnswerType,
+// 			"points":           ques_points,
+// 			"time_taken":       contestResult.TimeTaken,
+// 		})
+
+// 	}
+
+// 	c.JSON(200, gin.H{
+
+// 		"status":  "1",
+// 		"message": "User result found",
+// 		"details": gin.H{
+// 			"total_points": points,
+// 			"quiz_result":  response,
+// 		},
+// 	})
+
+// }
+
+// =============================================== GetUserOtherUserReport start ========================================================
+// GetUserOtherUserReport This API will list contest history joined by user
+//
+//	@Summary		This API will compare result with user id and other user ud
+//	@Description	This API will compare result with user id and other user ud
+//	@Schemes
+//	@Tags		Quizes
+//	@Accept		json
+//	@Produce	json
+//	@Param		user_id	path		string	true	"user id" default(32)
+//	@Param		other_user_id	path		string	true	"user id" default(31)
+//	@Param		category_id	path		string	true	"user id" default(50)
+//	@Success	200	{object}	GetUserOtherUserReportResponse
+//	@Router		/quizes/get-comparison-report/{user_id}/{other_user_id}/{category_id} [get]
+func (qc *QuizController) GetUserOtherUserReport(c *gin.Context) {
+
+	user_id := c.Param("user_id")
+	other_user_id := c.Param("other_user_id")
+	category_id := c.Param("category_id")
+
+	var user models.User
+	var otherUser models.User
+	var quizCategory models.QuizCategory
+	var userJoinContest models.UserJoinContestHistory
+	var otherUserJoinContest models.UserJoinContestHistory
+	var contestQuestions []models.QuizQuestion
+
+	//check user exist or not
+	if err := qc.DB.Where("register = '1' AND id = ?", user_id).First(&user).Error; err != nil {
+
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+
+			c.JSON(200, gin.H{
+
+				"status":  "0",
+				"message": "Invalid userid or user not found, " + err.Error(),
+			})
+			return
+
+		} else {
+
+			c.JSON(500, gin.H{
+
+				"status":  "0",
+				"message": "DB error while fetching user info, " + err.Error(),
+			})
+			return
+
+		}
+
+	}
+
+	//check other user exist or not
+	if err := qc.DB.Where("register = '1' AND id = ?", other_user_id).First(&otherUser).Error; err != nil {
+
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+
+			c.JSON(200, gin.H{
+
+				"status":  "0",
+				"message": "Invalid other_user_id or user not found, " + err.Error(),
+			})
+			return
+
+		} else {
+
+			c.JSON(500, gin.H{
+
+				"status":  "0",
+				"message": "DB error while fetching user info, " + err.Error(),
+			})
+			return
+
+		}
+
+	}
+
+	// check if category exist or not
+	if err := qc.DB.Where("id = ? AND deleted = '0'", category_id).First(&quizCategory).Error; err != nil {
+
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+
+			c.JSON(200, gin.H{
+
+				"status":  "0",
+				"message": "Invalid category id or category not found, " + err.Error(),
+			})
+
+		} else {
+
+			c.JSON(500, gin.H{
+
+				"status":  "0",
+				"message": "DB error while fetching category info, " + err.Error(),
+			})
+
+		}
+
+		return
+
+	}
+
+	// check if user joined quiz category or not
+	if err := qc.DB.Where("category_id = ? AND user_id = ?", category_id, user_id).First(&userJoinContest).Error; err != nil {
+
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+
+			c.JSON(200, gin.H{
+
+				"status":  "0",
+				"message": "No user found with this category id, " + err.Error(),
+			})
+
+		} else {
+
+			c.JSON(500, gin.H{
+
+				"status":  "0",
+				"message": "DB error while fetching user category info, " + err.Error(),
+			})
+
+		}
+
+		return
+
+	}
+
+	// check if other user joined quiz category or not
+	if err := qc.DB.Where("category_id = ? AND user_id = ?", category_id, other_user_id).First(&otherUserJoinContest).Error; err != nil {
+
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+
+			c.JSON(200, gin.H{
+
+				"status":  "0",
+				"message": "No other user found with this category id, " + err.Error(),
+			})
+
+		} else {
+
+			c.JSON(500, gin.H{
+
+				"status":  "0",
+				"message": "DB error while fetching other user category info, " + err.Error(),
+			})
+
+		}
+
+		return
+
+	}
+
+	if err := qc.DB.Where("category_id = ?", category_id).Find(&contestQuestions).Error; err != nil {
+
+		c.JSON(500, gin.H{
+
+			"status":  "0",
+			"message": "DB error while fetching quiz questions, " + err.Error(),
+		})
+		return
+	}
+
+	if len(contestQuestions) == 0 {
+
+		c.JSON(500, gin.H{
+
+			"status":  "0",
+			"message": "Some error occured no quiz questions found.",
+		})
+		return
+
+	}
+
+	var response []gin.H
+	var points uint
+	var otherPoints uint
+	for _, question := range contestQuestions {
+
+		var userAnswer string
+		var userAnswerType string
+		var ques_points uint
+		var timeTaken uint
+
+		var otherUserAnswer string
+		var otherUserAnswerType string
+		var otherUserQues_points uint
+		var otherUserTimeTaken uint
+
+		var contestResult models.UserContestResults
+		var otherUserContestResult models.UserContestResults
+
+		if err := qc.DB.Where("category_id = ? AND question_id = ? AND user_id = ?", category_id, question.ID, user_id).First(&contestResult).Error; err != nil {
+
+			points += 0
+			userAnswer = "N/A"
+			userAnswerType = "NA"
+			ques_points = 0
+
+		} else {
+
+			points += contestResult.Points
+			userAnswer = contestResult.AnswerGiven
+			userAnswerType = contestResult.AnswerType
+			ques_points = contestResult.Points
+
+		}
+
+		timeTaken = contestResult.TimeTaken
+
+		if err := qc.DB.Where("category_id = ? AND question_id = ? AND user_id = ?", category_id, question.ID, other_user_id).First(&otherUserContestResult).Error; err != nil {
+
+			otherPoints += 0
+			otherUserAnswer = "N/A"
+			otherUserAnswerType = "NA"
+			otherUserQues_points = 0
+
+		} else {
+
+			otherPoints += otherUserContestResult.Points
+			otherUserAnswer = otherUserContestResult.AnswerGiven
+			otherUserAnswerType = otherUserContestResult.AnswerType
+			otherUserQues_points = otherUserContestResult.Points
+
+		}
+
+		otherUserTimeTaken = contestResult.TimeTaken
+
+		response = append(response, gin.H{
+
+			"question":         question.Question,
+			"answer_a":         question.OptionA,
+			"answer_b":         question.OptionB,
+			"answer_c":         question.OptionC,
+			"answer_d":         question.OptionD,
+			"correct_answer":   question.CorrectAnswer,
+			"user_answer":      userAnswer,
+			"user_answer_type": userAnswerType,
+			"points":           ques_points,
+			"time_taken":       timeTaken,
+			// "total_points":           points,
+			"other_user_answer":      otherUserAnswer,
+			"other_user_answer_type": otherUserAnswerType,
+			"other_user_points":      otherUserQues_points,
+			"other_user_time_taken":  otherUserTimeTaken,
+			// "other_user_total_points": otherPoints,
+		})
+
+	}
+
+	c.JSON(200, gin.H{
+
+		"status":  "1",
+		"message": "User and Other user compasrison data found",
+		"details": gin.H{
+			"other_user_total_points": otherPoints,
+			"user_total_points":       points,
+			"response":                response,
+		},
+	})
+
+}
+
+type GetUserOtherUserReportResponse struct {
+	Status  string                `json:"status" example:"1"`
+	Message string                `json:"message" example:"User and Other user comparison data found"`
+	Details UserComparisonDetails `json:"details"`
+}
+
+// UserComparisonDetails holds user and other user comparison data
+type UserComparisonDetails struct {
+	OtherUserTotalPoints int                `json:"other_user_total_points" example:"450"`
+	UserTotalPoints      int                `json:"user_total_points" example:"165"`
+	Response             []ComparisonResult `json:"response"`
+}
+
+// ComparisonResult represents a single quiz question comparison
+type ComparisonResult struct {
+	Question            string `json:"question" example:"Who was the first Mughal Emperor of India?"`
+	AnswerA             string `json:"answer_a" example:"Akbar"`
+	AnswerB             string `json:"answer_b" example:"Babur"`
+	AnswerC             string `json:"answer_c" example:"Shah Jahan"`
+	AnswerD             string `json:"answer_d" example:"Aurangzeb"`
+	CorrectAnswer       string `json:"correct_answer" example:"b"`
+	UserAnswer          string `json:"user_answer" example:"N/A"`
+	UserAnswerType      string `json:"user_answer_type" example:"NA"`
+	OtherUserAnswer     string `json:"other_user_answer" example:"Akbar"`
+	OtherUserAnswerType string `json:"other_user_answer_type" example:"WRONG"`
+	OtherUserPoints     int    `json:"other_user_points" example:"15"`
+	OtherUserTimeTaken  int    `json:"other_user_time_taken" example:"0"`
+	Points              int    `json:"points" example:"0"`
+	TimeTaken           int    `json:"time_taken" example:"0"`
+}
+
 // =============================================== CreateLeaderboard cronjob start ========================================================
 
 func (qc *QuizController) CreateLeaderboard(c *gin.Context) {
@@ -1413,7 +1846,7 @@ func (qc *QuizController) CreateLeaderboard(c *gin.Context) {
 
 					totalTime := 0
 
-					if err := qc.DB.Table("user_join_contest_result").Where("category_id = ? AND user_id = ?", ujc.CategoryID, ujc.UserID).Select("SUM(time_taken)").Scan(&totalTime).Error; err != nil {
+					if err := qc.DB.Table("user_contest_results").Where("category_id = ? AND user_id = ?", ujc.CategoryID, ujc.UserID).Select("SUM(time_taken)").Scan(&totalTime).Error; err != nil {
 
 						println("DB error while getting total time.")
 

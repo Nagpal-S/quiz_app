@@ -105,6 +105,17 @@ type UserContestLeaderboard struct {
 	PrizeAmount    uint   `gorm:"not null;index" json:"prize_amount"`
 }
 
+type TbContestRewardDistribution struct {
+	ID         uint64    `gorm:"primaryKey;autoIncrement" json:"id"`
+	CategoryID uint64    `gorm:"not null;index" json:"category_id"`
+	RankFrom   uint64    `gorm:"not null;index" json:"rank_from"`
+	RankTo     uint64    `gorm:"not null;index" json:"rank_to"`
+	OverallPct float64   `gorm:"not null;index" json:"overall_pct"`
+	SinglePct  float64   `gorm:"not null;index" json:"single_pct"`
+	Winning    float64   `gorm:"not null;index" json:"winning"`
+	CreatedAt  time.Time `gorm:"type:timestamp;default:CURRENT_TIMESTAMP" json:"created_at"`
+}
+
 // MigrateUser migrates the User table
 func MigrateQuizCategory(db *gorm.DB) {
 	db.AutoMigrate(&QuizCategory{})
@@ -140,4 +151,8 @@ func MigrateContestPointsChart(db *gorm.DB) {
 
 func MigrateUserContestLeaderboard(db *gorm.DB) {
 	db.AutoMigrate(&UserContestLeaderboard{})
+}
+
+func MigrateTbContestRewardDistribution(db *gorm.DB) {
+	db.AutoMigrate(&TbContestRewardDistribution{})
 }

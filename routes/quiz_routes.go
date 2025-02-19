@@ -26,6 +26,7 @@ func QuizRoutes(router *gin.Engine, db *gorm.DB) {
 		quizGroup.GET("get-user-contest-history/:user_id", QuizController.GetUserPlayedContest)
 		quizGroup.POST("create-leaderboard", QuizController.CreateLeaderboard)
 		quizGroup.POST("close-entry", QuizController.CloseEntries)
+		quizGroup.GET("get-comparison-report/:user_id/:other_user_id/:category_id", QuizController.GetUserOtherUserReport)
 
 	}
 

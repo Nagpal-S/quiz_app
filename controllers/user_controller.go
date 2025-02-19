@@ -170,7 +170,7 @@ func (uc *UserController) VerifyOTP(c *gin.Context) {
 		}
 		c.JSON(http.StatusOK, gin.H{
 			"message": "User registered successfully",
-			"status":  "1",
+			"status":  "2",
 			"details": user, // Send user information in the response
 		})
 		return

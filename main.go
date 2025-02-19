@@ -48,6 +48,7 @@ func main() {
 	models.MigrateContestPointsChart(db)
 	models.MigrateUserContestLeaderboard(db)
 	models.MigrateBanners(db)
+	models.MigrateTbContestRewardDistribution(db)
 
 	router := gin.Default()
 
