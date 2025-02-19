@@ -33,7 +33,7 @@ func (qc *QuizController) GetQuizCategories(c *gin.Context) {
 	var quizCategories []models.QuizCategory
 
 	// Fetch active quiz categories where quiz_time is greater than or equal to the current time
-	if err := qc.DB.Where("active = 1 AND quiz_time >= ?", time.Now()).Find(&quizCategories).Error; err != nil {
+	if err := qc.DB.Where("active = 1 AND quiz_time >= ? AND deleted = 0", time.Now()).Find(&quizCategories).Error; err != nil {
 		c.JSON(500, gin.H{
 			"status":  "0",
 			"message": "Database error occurred.",
@@ -120,7 +120,7 @@ func (qc *QuizController) GetQuizByCategory(c *gin.Context) {
 	var quiz []models.QuizQuestion
 	var category models.QuizCategory
 
-	if err := qc.DB.Where("id = ? AND active = 1 AND quiz_time <= ?", categoryId, time.Now()).First(&category).Error; err != nil {
+	if err := qc.DB.Where("id = ? AND active = 1 AND quiz_time <= ? AND deleted = 0", categoryId, time.Now()).First(&category).Error; err != nil {
 
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 
@@ -261,7 +261,7 @@ func (qc *QuizController) UserJoinContest(c *gin.Context) {
 	}
 
 	// category info
-	if err := qc.DB.Where("id = ? AND active = 1", categoryId).First(&category).Error; err != nil {
+	if err := qc.DB.Where("id = ? AND active = 1  AND deleted = 0", categoryId).First(&category).Error; err != nil {
 
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 
@@ -516,7 +516,7 @@ func (qc *QuizController) GetContestJoinedByUser(c *gin.Context) {
 
 		var category models.QuizCategory
 
-		err := qc.DB.Where("id = ?", contests.CategoryID).First(&category).Error
+		err := qc.DB.Where("id = ? AND deleted = 0", contests.CategoryID).First(&category).Error
 		if err != nil {
 			continue
 		}
@@ -530,6 +530,17 @@ func (qc *QuizController) GetContestJoinedByUser(c *gin.Context) {
 			"contest_amount":            category.TotalPrice,
 			"contest_id":                category.ID,
 		})
+
+	}
+
+	if len(response) == 0 {
+
+		c.JSON(200, gin.H{
+			"status":  "0",
+			"message": "Contest list found empty.",
+		})
+
+		return
 
 	}
 
@@ -1197,6 +1208,7 @@ func (qc *QuizController) GetUserContestLeaderboard(c *gin.Context) {
 	}
 
 	var response []gin.H
+	position := 1
 	for _, data := range leaderboard {
 
 		var user models.User
@@ -1219,7 +1231,10 @@ func (qc *QuizController) GetUserContestLeaderboard(c *gin.Context) {
 			"points":       data.Points,
 			"prize_amount": data.PrizeAmount,
 			"time_taken":   data.TotalTimeTaken,
+			"position":     position,
 		})
+
+		position++
 
 	}
 
@@ -1246,6 +1261,7 @@ type LeaderboardEntry struct {
 	UserImage   string `json:"user_image" example:"image"`
 	UserName    string `json:"user_name" example:"snagpal"`
 	UserId      string `json:"user_id" example:"1"`
+	Position    string `json:"position" example:"1"`
 }
 
 // =============================================== GetUserPlayedContest start ========================================================
@@ -1319,7 +1335,7 @@ func (qc *QuizController) GetUserPlayedContest(c *gin.Context) {
 		var category models.QuizCategory
 		var leaderboard models.UserContestLeaderboard
 
-		err := qc.DB.Where("id = ?", contests.CategoryID).First(&category).Error
+		err := qc.DB.Where("id = ? AND deleted = 0", contests.CategoryID).First(&category).Error
 		if err != nil {
 			continue
 		}
@@ -1340,6 +1356,17 @@ func (qc *QuizController) GetUserPlayedContest(c *gin.Context) {
 			"points":                    leaderboard.Points,
 			"prize_amount":              leaderboard.PrizeAmount,
 		})
+
+	}
+
+	if len(response) == 0 {
+
+		c.JSON(200, gin.H{
+			"status":  "0",
+			"message": "Contest list found empty.",
+		})
+
+		return
 
 	}
 

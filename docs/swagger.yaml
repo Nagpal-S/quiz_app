@@ -73,6 +73,51 @@ definitions:
         example: "1"
         type: string
     type: object
+  controllers.ComparisonResult:
+    properties:
+      answer_a:
+        example: Akbar
+        type: string
+      answer_b:
+        example: Babur
+        type: string
+      answer_c:
+        example: Shah Jahan
+        type: string
+      answer_d:
+        example: Aurangzeb
+        type: string
+      correct_answer:
+        example: b
+        type: string
+      other_user_answer:
+        example: Akbar
+        type: string
+      other_user_answer_type:
+        example: WRONG
+        type: string
+      other_user_points:
+        example: 15
+        type: integer
+      other_user_time_taken:
+        example: 0
+        type: integer
+      points:
+        example: 0
+        type: integer
+      question:
+        example: Who was the first Mughal Emperor of India?
+        type: string
+      time_taken:
+        example: 0
+        type: integer
+      user_answer:
+        example: N/A
+        type: string
+      user_answer_type:
+        example: NA
+        type: string
+    type: object
   controllers.ContestHistoryInfo:
     properties:
       contest_amount:
@@ -176,6 +221,17 @@ definitions:
         example: "1"
         type: string
     type: object
+  controllers.GetUserOtherUserReportResponse:
+    properties:
+      details:
+        $ref: '#/definitions/controllers.UserComparisonDetails'
+      message:
+        example: User and Other user comparison data found
+        type: string
+      status:
+        example: "1"
+        type: string
+    type: object
   controllers.GetUserPlayedContestResponse:
     properties:
       details:
@@ -216,12 +272,18 @@ definitions:
       points:
         example: 175
         type: integer
+      position:
+        example: "1"
+        type: string
       prize_amount:
         example: 0
         type: integer
       time_taken:
-        example: 0
+        example: 20
         type: integer
+      user_id:
+        example: "1"
+        type: string
       user_image:
         example: image
         type: string
@@ -440,6 +502,19 @@ definitions:
         example: CREDIT
         type: string
     type: object
+  controllers.UserComparisonDetails:
+    properties:
+      other_user_total_points:
+        example: 450
+        type: integer
+      response:
+        items:
+          $ref: '#/definitions/controllers.ComparisonResult'
+        type: array
+      user_total_points:
+        example: 165
+        type: integer
+    type: object
   controllers.WalletDetails:
     properties:
       transactions:
@@ -575,6 +650,40 @@ paths:
           schema:
             $ref: '#/definitions/controllers.CategoryInfo'
       summary: This API will provide list of quiz categories
+      tags:
+      - Quizes
+  /quizes/get-comparison-report/{user_id}/{other_user_id}/{category_id}:
+    get:
+      consumes:
+      - application/json
+      description: This API will compare result with user id and other user ud
+      parameters:
+      - default: "32"
+        description: user id
+        in: path
+        name: user_id
+        required: true
+        type: string
+      - default: "31"
+        description: user id
+        in: path
+        name: other_user_id
+        required: true
+        type: string
+      - default: "50"
+        description: user id
+        in: path
+        name: category_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/controllers.GetUserOtherUserReportResponse'
+      summary: This API will compare result with user id and other user ud
       tags:
       - Quizes
   /quizes/get-contest-joined-by-user/{user_id}:

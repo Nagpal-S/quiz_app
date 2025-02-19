@@ -42,6 +42,55 @@
                 }
             }
         },
+        "/quizes/get-comparison-report/{user_id}/{other_user_id}/{category_id}": {
+            "get": {
+                "description": "This API will compare result with user id and other user ud",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Quizes"
+                ],
+                "summary": "This API will compare result with user id and other user ud",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "default": "32",
+                        "description": "user id",
+                        "name": "user_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "default": "31",
+                        "description": "user id",
+                        "name": "other_user_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "default": "50",
+                        "description": "user id",
+                        "name": "category_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/controllers.GetUserOtherUserReportResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/quizes/get-contest-joined-by-user/{user_id}": {
             "get": {
                 "description": "This API will list contest joined by user",
@@ -783,6 +832,67 @@
                 }
             }
         },
+        "controllers.ComparisonResult": {
+            "type": "object",
+            "properties": {
+                "answer_a": {
+                    "type": "string",
+                    "example": "Akbar"
+                },
+                "answer_b": {
+                    "type": "string",
+                    "example": "Babur"
+                },
+                "answer_c": {
+                    "type": "string",
+                    "example": "Shah Jahan"
+                },
+                "answer_d": {
+                    "type": "string",
+                    "example": "Aurangzeb"
+                },
+                "correct_answer": {
+                    "type": "string",
+                    "example": "b"
+                },
+                "other_user_answer": {
+                    "type": "string",
+                    "example": "Akbar"
+                },
+                "other_user_answer_type": {
+                    "type": "string",
+                    "example": "WRONG"
+                },
+                "other_user_points": {
+                    "type": "integer",
+                    "example": 15
+                },
+                "other_user_time_taken": {
+                    "type": "integer",
+                    "example": 0
+                },
+                "points": {
+                    "type": "integer",
+                    "example": 0
+                },
+                "question": {
+                    "type": "string",
+                    "example": "Who was the first Mughal Emperor of India?"
+                },
+                "time_taken": {
+                    "type": "integer",
+                    "example": 0
+                },
+                "user_answer": {
+                    "type": "string",
+                    "example": "N/A"
+                },
+                "user_answer_type": {
+                    "type": "string",
+                    "example": "NA"
+                }
+            }
+        },
         "controllers.ContestHistoryInfo": {
             "type": "object",
             "properties": {
@@ -929,6 +1039,22 @@
                 }
             }
         },
+        "controllers.GetUserOtherUserReportResponse": {
+            "type": "object",
+            "properties": {
+                "details": {
+                    "$ref": "#/definitions/controllers.UserComparisonDetails"
+                },
+                "message": {
+                    "type": "string",
+                    "example": "User and Other user comparison data found"
+                },
+                "status": {
+                    "type": "string",
+                    "example": "1"
+                }
+            }
+        },
         "controllers.GetUserPlayedContestResponse": {
             "type": "object",
             "properties": {
@@ -987,13 +1113,21 @@
                     "type": "integer",
                     "example": 175
                 },
+                "position": {
+                    "type": "string",
+                    "example": "1"
+                },
                 "prize_amount": {
                     "type": "integer",
                     "example": 0
                 },
                 "time_taken": {
                     "type": "integer",
-                    "example": 0
+                    "example": 20
+                },
+                "user_id": {
+                    "type": "string",
+                    "example": "1"
                 },
                 "user_image": {
                     "type": "string",
@@ -1294,6 +1428,25 @@
                 "transaction_type": {
                     "type": "string",
                     "example": "CREDIT"
+                }
+            }
+        },
+        "controllers.UserComparisonDetails": {
+            "type": "object",
+            "properties": {
+                "other_user_total_points": {
+                    "type": "integer",
+                    "example": 450
+                },
+                "response": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/controllers.ComparisonResult"
+                    }
+                },
+                "user_total_points": {
+                    "type": "integer",
+                    "example": 165
                 }
             }
         },
